@@ -18,7 +18,7 @@ export default function Footer() {
             LinkedIn
           </a>
           <a
-            href="https://github.com/shreyjari/"
+            href="https://github.com/ShreyJariwala/"
             target="_blank"
             rel="noopener noreferrer"
             className="hover:text-rust transition-colors"

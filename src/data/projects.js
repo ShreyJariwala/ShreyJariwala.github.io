@@ -89,7 +89,7 @@ export const projects = [
       "Aircraft availability and dispatch-window matching",
       "Open source, self-directed — no client or employer requirement",
     ],
-    links: { github: "https://github.com/shreyjari/" },
+    links: { github: "https://github.com/ShreyJariwala/" },
   },
   {
     id: "gia-lookup",
@@ -120,7 +120,7 @@ export const projects = [
     nerdyDetails: [
       "Open source, geospatial mapping of public facility/program data",
     ],
-    links: { github: "https://github.com/shreyjari/" },
+    links: { github: "https://github.com/ShreyJariwala/" },
   },
   {
     id: "immigration-process",
@@ -134,7 +134,7 @@ export const projects = [
     nerdyDetails: [
       "Open source",
     ],
-    links: { github: "https://github.com/shreyjari/" },
+    links: { github: "https://github.com/ShreyJariwala/" },
   },
   {
     id: "power-query-toolkit",
@@ -151,7 +151,7 @@ export const projects = [
       "try...otherwise error handling, type and null guards",
       "Applied across PTAG FM and UKG-sourced queries",
     ],
-    links: { github: "https://github.com/shreyjari/" },
+    links: { github: "https://github.com/ShreyJariwala/" },
   },
   {
     id: "watch-automations",
