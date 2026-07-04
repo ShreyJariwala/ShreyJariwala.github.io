@@ -1,133 +1,104 @@
 # Learning Log — Portfolio Build & Deploy
 
-Running log for this session. Will be restructured into a final summary
-(with diagrams/tables) once the live site is confirmed working end to end.
+**Session outcome:** Built a React + Vite + Tailwind v4 portfolio from
+scratch and shipped it to `https://shreyjari.github.io/` for free via
+GitHub Pages + GitHub Actions. Confirmed live and working end to end.
 
-## Timeline so far
+This doc exists so the *next* time we stand up a static site like this,
+we hit none of the below on the first try.
 
-1. Built the portfolio (React + Vite + Tailwind v4) from the brief — hero,
-   project grid with modal detail view, toolbelt, currently-curious, contact
-   form.
-2. Verified locally via the preview dev server. The `preview_screenshot`
-   tool timed out repeatedly with no underlying error — cross-checked with
-   the accessibility snapshot and computed-style inspection instead, which
-   confirmed the app was rendering correctly. **Lesson: a flaky screenshot
-   tool isn't proof of a broken app — corroborate with a second signal
-   (DOM snapshot, computed styles, console/network logs) before assuming
-   the code is at fault.**
-3. Decided on hosting: ruled out Google Drive (doesn't execute JS / serve
-   live sites anymore), went with GitHub Pages since a GitHub account
-   already existed.
-4. Set repo naming convention: `shreyjari.github.io` for a root-domain
-   "user site" (vs. a project-page subpath).
-5. Committed a custom GitHub Actions workflow (`.github/workflows/deploy.yml`)
-   to build via Vite and publish `dist/` to Pages.
+---
 
-## Problems hit, and how we found/fixed each one
+## 1. What got built
 
-### Problem 1 — Wrong remote repo
-- **Symptom:** Pushed code, but `Settings → Pages` on `shreyjari.github.io`
-  showed nothing related to our push.
-- **Root cause:** `git remote add origin` was pointed at
-  `github.com/shreyjari/portfolio.git`, a different repo than the one
-  actually being checked (`shreyjari.github.io`).
-- **Fix:** `git remote set-url origin` to the correct repo.
-- **Lesson: always confirm `git remote -v` matches the exact repo you're
-  looking at in the browser before debugging deploy behavior.**
+- React + Vite + Tailwind v4 single-page portfolio: hero, project grid
+  (11 projects, each opening a modal with full story + a "nerdy details"
+  toggle), toolbelt, "currently curious about," and a contact section
+  (LinkedIn button + a visitor-submitted Formspree form — no personal
+  contact info exposed on the page).
+- Hosting: GitHub Pages, served at the **root domain**
+  `shreyjari.github.io` (a "user site" repo, not a project subpath).
+- Deployment: a custom GitHub Actions workflow
+  (`.github/workflows/deploy.yml`) that runs `npm ci && npm run build`
+  and publishes `dist/` — fully automatic on every `git push` to `main`.
 
-### Problem 2 — Pages source set to "Deploy from a branch"
-- **Symptom:** Visiting the live URL showed a bare, auto-generated Jekyll
-  page ("Shrey Jariwala" heading, "This site is open source. Improve this
-  page." footer) instead of the real site — even though a workflow run
-  showed green.
-- **Root cause:** GitHub Pages defaults new repos to "Deploy from a
-  branch," which runs GitHub's own generic Jekyll build against whatever's
-  in the branch. It has no concept of "run `npm run build` first" — it was
-  literally rendering the repo's `README.md` through Jekyll's default
-  theme. The green checkmark we saw earlier belonged to that generic
-  `pages-build-deployment` workflow, not our custom one.
-- **Fix:** `Settings → Pages → Source →` switch to **GitHub Actions**.
-- **Lesson: a green checkmark in Actions doesn't tell you *which* workflow
-  ran. Check the workflow *name*, not just pass/fail — "pages build and
-  deployment" (GitHub's built-in) and "Deploy to GitHub Pages" (our custom
-  one) are different things that can both appear in the same repo.**
+## 2. How the pipeline works, end to end
 
-### Problem 3 — Target repo had unrelated history
-- **Symptom:** After fixing the remote, a normal `git push` was rejected.
-- **Root cause:** `shreyjari.github.io` had been created on github.com with
-  "Add a README" checked, giving it one auto-generated commit that shared
-  no history with our local repo.
-- **Fix:** Confirmed with the user that repo had nothing worth keeping,
-  then `git push --force-with-lease` to overwrite it. (First attempt failed
-  with "stale info" because the local `origin/main` tracking ref hadn't
-  been fetched yet — `git fetch origin` before the force-push resolved
-  that.)
-- **Lesson: when initializing a new GitHub repo meant to receive an
-  existing local project, create it *empty* (no README/gitignore/license)
-  to avoid a history clash entirely.**
+```mermaid
+flowchart LR
+    A["Local edit\n(Vite + React)"] -->|"git push main"| B[("GitHub repo\nshreyjari.github.io")]
+    B -->|"on: push"| C["GitHub Actions\ndeploy.yml"]
+    C --> D["npm ci"]
+    D --> E["npm run build"]
+    E --> F["upload dist/ as\nPages artifact"]
+    F --> G["actions/deploy-pages"]
+    G --> H(["https://shreyjari.github.io\n(live)"])
+```
 
-### Problem 4 — `npm ci` failing in CI only (the real blocker)
-- **Symptom:** After fixing Pages source, the custom workflow now ran but
-  failed at the `npm ci` step, twice in a row. Site stayed stuck on the old
-  Jekyll deploy.
-- **Diagnosis path:**
-  1. GitHub Actions logs aren't fetchable via the public API without auth
-     (403), and no `gh` CLI was available in this environment — so we
-     worked entirely from the run/job status API
-     (`/actions/runs`, `/actions/runs/{id}/jobs`) to isolate which step
-     failed. The user then supplied the actual terminal error text
-     directly.
-  2. Reproducing `npm ci` locally on Windows initially *succeeded* —
-     misleading, because the failure was Linux-specific (npm resolves
-     platform-specific optional dependencies differently per OS).
-  3. Actual error: `Missing: @emnapi/core@1.11.2 from lock file` /
-     `Missing: @emnapi/runtime@1.11.2 from lock file`.
-- **Root cause:** `package-lock.json` was generated on Windows. These two
-  packages are transitive dependencies of the `wasm32-wasi` optional
-  variant of `@tailwindcss/oxide` (Tailwind v4's native engine) — a
-  variant that's irrelevant on Windows but that npm's lockfile is still
-  supposed to fully describe for *every* platform. A known npm gap means
-  lockfiles generated on one OS can under-describe another OS's transitive
-  optional-dependency subtree, which makes `npm ci` (strict, lockfile-only)
-  fail on a different OS even though `npm install` would work fine.
-- **Fix:** Deleted `package-lock.json` and `node_modules`, ran a clean
-  `npm install`, confirmed the two missing packages now appeared in the
-  regenerated lockfile, verified `npm ci` succeeded locally, committed, and
-  pushed. New Actions run succeeded.
-- **Lesson: if a CI-only `npm ci` failure ever comes up again, check
-  whether the lockfile was generated on a different OS than the CI runner
-  before chasing anything else. A clean `rm package-lock.json node_modules
-  && npm install` regenerate is the fast fix. Reproducing `npm ci` locally
-  on the *same OS as CI* (Linux, here) would have caught this immediately
-  instead of costing two failed runs — worth a Docker/WSL Linux container
-  check for cross-platform lockfile issues in the future.**
+Any future content or code change is just: edit → commit → push. No
+manual build or upload step required.
 
-### Problem 5 — Stale caching made verification noisy
-- **Symptom:** Multiple times, a fetch/check of the live site kept
-  returning old content even after a real fix had landed.
-- **Root cause:** Two independent caches were in play — the `WebFetch` tool
-  has its own 15-minute cache keyed loosely by URL, and GitHub Pages itself
-  sits behind Fastly's CDN which can serve a cached edge copy for a few
-  minutes after a new deploy. Separately, the user's own browser cache held
-  onto the old page after a plain refresh.
-- **Fix:** Cache-busted `WebFetch` calls with a throwaway query string
-  parameter; verified real state via the GitHub Actions API (run status +
-  head SHA) rather than trusting a single page fetch; recommended a hard
-  refresh / incognito window on the user's end.
-- **Lesson: when a "should be fixed now" check still shows the old state,
-  don't assume the fix failed — first rule out caching at each layer (tool
-  cache, CDN, browser) before re-diagnosing the underlying problem.**
+## 3. Everything that went wrong, and the actual fix
 
-## Status
+We hit six distinct problems getting from "code exists locally" to "site
+is actually correct and scrollable in a real browser." Chasing each one
+down in order:
 
-- [x] Site builds and deploys correctly via GitHub Actions to
-      `https://shreyjari.github.io/`
-- [x] Confirmed via GitHub API: latest run (commit `7b3fb9a`) succeeded
-- [ ] **Pending: user to confirm the live site renders correctly after a
-      hard refresh / incognito check** — final summary + diagrams to follow
-      once confirmed
-- [ ] Formspree ID still needs to be swapped into `src/components/Contact.jsx`
-      (line 4, `YOUR_FORM_ID`) for the contact form to actually deliver
-      messages
-- [ ] Stray `shreyjari/portfolio` repo (created during the remote mix-up)
-      can be deleted on GitHub if desired — not connected to anything live
+```mermaid
+flowchart TD
+    P1["Pushed code"] --> Q1{"Real site showing?"}
+    Q1 -- "No: bare Jekyll README page" --> P2["Check Settings -> Pages -> Source"]
+    P2 --> P2fix["Switch source to\nGitHub Actions"]
+    P2fix --> Q2{"Custom workflow\nin Actions tab?"}
+    Q2 -- "No" --> P1a["Check git remote -v\nvs repo in browser"]
+    P1a --> P1fix["Fix remote URL,\nforce-push if history conflicts"]
+    P1fix --> Q2
+    Q2 -- "Yes, but red X" --> P3["Query Actions API\nfor failed step"]
+    P3 --> Q3{"npm ci fails\nonly in CI?"}
+    Q3 -- Yes --> P3fix["Regenerate lockfile\n(cross-OS gap)"]
+    Q3 -- No --> P3other["Investigate\nother cause"]
+    P3fix --> Q4{"Live site correct\nafter deploy?"}
+    Q1 -- Yes --> Q4
+    Q4 -- "No: stale content" --> P4["Rule out caching:\ntool / CDN / browser"]
+    P4 --> P4fix["Cache-bust fetch,\nhard refresh / incognito"]
+    P4fix --> Q4
+    Q4 -- Yes --> P5["Manually click through\nreal browser UX"]
+    P5 --> Q5{"Scroll & interactions\nwork correctly?"}
+    Q5 -- "No: page can't scroll" --> P6["Bug: modal effect ran\non every mount, locked\nbody scroll from load"]
+    P6 --> P6fix["Guard useEffect:\nonly run when modal\nis actually open"]
+    P6fix --> Done(["Confirmed live\nand fully working"])
+    Q5 -- Yes --> Done
+```
+
+### Issue log
+
+| # | Symptom | Root cause | Fix |
+|---|---------|-----------|-----|
+| 1 | `git push` succeeded, but Pages settings for the repo we were checking showed nothing new | `git remote` pointed at `shreyjari/portfolio.git`, a different repo than the one open in the browser (`shreyjari.github.io`) | `git remote set-url origin` to the correct repo URL |
+| 2 | Live URL showed a bare "Shrey Jariwala / This site is open source. Improve this page." Jekyll page, even though an Actions run was green | GitHub Pages defaulted to **"Deploy from a branch,"** which runs GitHub's generic Jekyll build against the raw repo (it rendered `README.md`) — completely bypassing our Vite build. The green check belonged to GitHub's own `pages-build-deployment` workflow, not ours | `Settings → Pages → Source →` **GitHub Actions** |
+| 3 | After fixing the remote, `git push` was rejected | Target repo was created on github.com with "Add a README" checked, giving it one unrelated commit with no shared history | Confirmed nothing worth keeping, then `git fetch origin` + `git push --force-with-lease` to overwrite it |
+| 4 | Custom workflow now ran, but failed twice at `npm ci` with `EUSAGE` / `Missing: @emnapi/core`, `@emnapi/runtime` from lock file | `package-lock.json` was generated on Windows. Those two packages are transitive deps of the Linux/WASM-only optional variant of `@tailwindcss/oxide` — a known npm gap where a lockfile generated on one OS can under-describe another OS's optional-dependency subtree, which `npm ci` (strict) rejects | Deleted `package-lock.json` + `node_modules`, ran a clean `npm install`, verified the packages appeared and `npm ci` passed locally, committed the regenerated lockfile |
+| 5 | Repeated "is it fixed yet?" checks kept showing stale/old content even after a real fix landed | Three independent caches stacked: the fetch tool's own ~15 min cache, GitHub Pages' Fastly CDN edge cache, and the user's browser cache | Cache-busted fetches with throwaway query params; verified ground truth via the Actions API (run status + head commit SHA) instead of trusting a single page load; hard refresh / incognito on the user's end |
+| 6 | Site deployed correctly, but the live page couldn't scroll past the first row of project cards, and text near the top appeared to "shake" when scrolling was attempted | `ProjectModal`'s `useEffect` set `document.body.style.overflow = "hidden"` **unconditionally on mount** — it ran even when no project was selected, because the early `if (!project) return null` happens in the render body, *after* hooks already ran. Since the modal component never actually unmounts (it's always rendered, just returns `null`), the lock never cleared. The "shaking" was almost certainly the browser's rubber-band/overscroll bounce animation reacting to an unscrollable page | Added `if (!project) return;` as the first line inside the effect, so the scroll-lock only ever applies while a project is actually selected |
+
+## 4. Lessons for next time (pre-flight checklist)
+
+- [ ] **Before creating a new GitHub repo to receive existing local code:** create it *empty* — no README, no `.gitignore`, no license — to avoid a history clash on first push.
+- [ ] **Before trusting a green checkmark in Actions:** check the workflow's *name*, not just pass/fail. GitHub's built-in `pages-build-deployment` and a custom workflow can both exist in the same repo and mean very different things.
+- [ ] **Before debugging any GitHub Pages deploy issue:** confirm `Settings → Pages → Source` is set to **GitHub Actions**, not "Deploy from a branch" (the default for new repos).
+- [ ] **Before assuming `git push` failures or wrong deploy targets are a settings problem:** run `git remote -v` and diff it against the exact repo URL open in the browser.
+- [ ] **If `npm ci` fails only in CI, never locally:** suspect a cross-OS lockfile gap first, especially with any package that ships native/WASM platform variants (Tailwind v4's oxide engine, esbuild, Rollup, etc). Fix is almost always: delete `package-lock.json` + `node_modules`, fresh `npm install`, recommit. Ideally reproduce `npm ci` inside a Linux container/WSL locally *before* pushing, to catch this without burning CI cycles.
+- [ ] **If a fix "should have worked" but the live site still looks old:** rule out caching layer by layer (fetch-tool cache → CDN edge cache → browser cache) before re-diagnosing the code.
+- [ ] **Before shipping any modal/overlay component that toggles `body.style.overflow`:** guard the effect so it only touches global document state while the overlay is actually open — never let a hook that runs on every mount assume the component's visible state.
+- [ ] **After a deploy looks "done":** actually click through the live site by hand (scroll, open a modal, close it) rather than stopping at "the build succeeded" or "the title tag looks right." Automated checks caught the deploy pipeline issues; only manual use caught the scroll-lock bug.
+
+## 5. Outstanding items
+
+| Item | Status |
+|---|---|
+| Site builds & deploys automatically on push | ✅ Done |
+| Live at `https://shreyjari.github.io/`, confirmed by user | ✅ Done |
+| Scroll-lock bug fixed and redeployed | ✅ Done |
+| Formspree ID swapped into `src/components/Contact.jsx` (line 4, currently `YOUR_FORM_ID`) | ⬜ Still needed — form won't deliver messages until this is set |
+| Stray `shreyjari/portfolio` repo from the remote mix-up | ⬜ Optional cleanup — not connected to anything live, safe to delete |
+| Personal photo/avatar | ⬜ Deferred — no slot currently in the design, add when available |
