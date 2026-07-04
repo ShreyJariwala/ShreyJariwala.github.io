@@ -1,0 +1,47 @@
+@import "tailwindcss";
+
+@theme {
+  --font-serif: "Fraunces", ui-serif, Georgia, serif;
+  --font-sans: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+
+  --color-paper: #faf6ef;
+  --color-paper-dim: #f2ebdf;
+  --color-ink: #2a2620;
+  --color-ink-soft: #5c564c;
+  --color-line: #e4dbc9;
+  --color-rust: #c1571f;
+  --color-rust-dark: #9c4517;
+  --color-rust-soft: #f2dcc9;
+  --color-saffron: #ff9933;
+  --color-green-flag: #138808;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+}
+
+::selection {
+  background: var(--color-rust-soft);
+  color: var(--color-rust-dark);
+}
+
+.font-serif {
+  font-family: var(--font-serif);
+}
+
+@keyframes modal-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

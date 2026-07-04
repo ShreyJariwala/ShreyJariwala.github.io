@@ -1,0 +1,188 @@
+// vibe: "flagship" | "tool" | "civic" | "personal" | "spec"
+export const projects = [
+  {
+    id: "ukg-netsuite-gl",
+    vibe: "flagship",
+    title: "UKG Ready ↔ NetSuite GL Integration",
+    tagline: "1,700+ journal entries stuck in a suspense account, and nobody knew why.",
+    story: [
+      "Every pay period, payroll journal entries were supposed to flow from UKG Ready into NetSuite and land cleanly in the general ledger. Instead, well over 1,700 rows kept parking themselves in a \"Suspense\" account — the accounting equivalent of a junk drawer, quietly growing every cycle.",
+      "The mapping wasn't broken, exactly. It was ambiguous. UKG modeled cost centers one way; NetSuite split the same concept across separate \"Projects\" and \"Jobs\" trees. A single UKG cost center could legitimately point to more than one place on the NetSuite side, and there was no clean rule for picking one.",
+      "Fixing it meant untangling things in the right order, because getting the sequence wrong would've meant redoing all of it: split the cost center tree first, then reconfigure the GL export format around the new tree, rebuild the override rules that had grown up as workarounds for the old ambiguity, remap every timesheet against the new structure, and only then rebuild the extraction and import path.",
+      "Underneath all of it sat a machine-to-machine authentication layer — OAuth 2.0 client credentials, JWT assertions signed with ES256/PS256 — so the two systems could hand data back and forth without a person babysitting the exchange.",
+      "Suspense stopped being a permanent address. Journal entries land where they're supposed to now, every cycle, without someone reconciling a junk-drawer account by hand.",
+    ],
+    nerdyDetails: [
+      "OAuth 2.0 client-credentials (M2M) grant with JWT bearer assertions",
+      "JWT signing via ES256 / PS256",
+      "NetSuite SuiteScript + SuiteTalk (SOAP/REST) for JE import",
+      "UKG Ready GL export configuration and cost-center tree redesign",
+      "Timesheet remapping against the split CC structure",
+      "Sequenced, staged rollout to avoid re-touching completed steps",
+    ],
+  },
+  {
+    id: "mapping-workbench",
+    vibe: "flagship",
+    title: "UKG↔NetSuite Mapping Workbench",
+    tagline: "Two systems, two ID schemes, and no shared key between them.",
+    story: [
+      "Splitting the cost center tree solved half the problem. The other half: someone still had to decide, record by record, which UKG project corresponded to which NetSuite job — and the two systems never agreed on IDs, so there was no lookup, just judgment calls.",
+      "This wasn't a one-time cleanup. New projects get created constantly, which meant the manual matching would have to happen forever, by hand, every time — exactly the kind of repetitive, error-prone task that quietly eats a day a month and never shows up on anyone's roadmap.",
+      "So instead of matching records, I built the thing that suggests the match: a Suitelet with a fuzzy-matching engine that scores candidate pairs by confidence, surfaces the ambiguous middle ground for a human to actually look at, and writes the confirmed mapping back to the source system over PATCH.",
+      "Reconciliation went from \"squint at two spreadsheets side by side\" to \"skim a short list of medium-confidence guesses and click confirm.\" The judgment calls still happen — they just take minutes instead of hours.",
+    ],
+    nerdyDetails: [
+      "Custom NetSuite Suitelet (SuiteScript 2.x)",
+      "Fuzzy string matching with weighted confidence scoring",
+      "Human-in-the-loop review queue, sorted by ambiguity",
+      "PATCH write-back to the source system on confirmation",
+    ],
+  },
+  {
+    id: "powerbi-parkland",
+    vibe: "flagship",
+    title: "Power BI Reporting Suite — Sunoco TGTU & nPh-SWS",
+    tagline: "A 12,000-row piping tracker, and no way to tell if the project was actually on track.",
+    story: [
+      "On a live refining infrastructure project for Parkland Refining, progress was buried in a piping tracker with over 12,000 rows and roughly 50,000 budgeted hours split across disciplines. All the data anyone needed to know whether the project was healthy existed — it just wasn't in a shape anyone could read at a glance.",
+      "The field data was messy in the ordinary ways field data is messy: inconsistent statuses, partial completions, updates that landed out of order. None of that is a reason a project manager should have to open a spreadsheet with 12,000 rows to answer \"are we on schedule.\"",
+      "I built Earned Value Management dashboards and discipline health cards on top of the tracker — hours budgeted versus hours earned versus hours spent, rolled up by discipline, tracked against percent complete, refreshed on a schedule instead of reconstructed by hand.",
+      "The people making staffing and schedule calls got a tool that answered their actual question instead of a data dump they had to interpret themselves.",
+    ],
+    nerdyDetails: [
+      "Power BI star schema over a 12,000+ row piping tracker",
+      "Earned Value Management (EVM) calculations: BCWS, BCWP, ACWP rolled up by discipline",
+      "Discipline health cards against a ~50,000 hour budget",
+      "Scheduled refresh pipeline against field-updated source data",
+    ],
+  },
+  {
+    id: "ptag-fm-utilization",
+    vibe: "flagship",
+    title: "PTAG FM Utilization & Sales Reporting",
+    tagline: "Turning raw utilization numbers into decisions about who gets staffed where.",
+    story: [
+      "Utilization data existed, but it lived as raw numbers — hours logged, engagements worked — without a shape that helped anyone decide how to staff or price the next piece of work.",
+      "I built out service-line by engagement-type pivot reporting in Power BI, restructured around the actual questions leadership was asking: which service lines are stretched thin, which engagement types are the most (or least) profitable to staff, where's the slack.",
+      "It's less flashy than a lot of dashboards, but it's the one that gets used in a room where money decisions get made — staffing plans and pricing conversations that used to run on gut feel now start from a number.",
+    ],
+    nerdyDetails: [
+      "Power BI pivot reporting: service line × engagement type",
+      "Role-level security (RLS) for leadership-only views",
+      "Deployment pipeline for scheduled dataset refresh",
+    ],
+  },
+  {
+    id: "fox-air-ambulance",
+    vibe: "personal",
+    title: "Fox Air Ambulance — Pilot Scheduling System",
+    tagline: "Nobody asked. An air ambulance operator's scheduling problem was just genuinely interesting.",
+    story: [
+      "This one wasn't a work assignment — it caught my attention because the constraints were real in a way most scheduling problems aren't. Fox Air Ambulance runs medevac flights out of Toronto, and getting a crew in the air isn't just \"who's free\": it's crew rest rules that exist because fatigued pilots are a safety risk, aircraft that need to be in the right place, and dispatch windows that can't slip.",
+      "That's a constraint-satisfaction problem with actual stakes attached, which is a hard combination to walk past once you've noticed it.",
+      "So I built a scheduling tool, open source, on my own time — one that respects rest-rule constraints and aircraft availability instead of just filling a calendar grid and hoping a human catches the violations.",
+      "It's not a product with a customer. It's the project that best shows the reflex when there's no stakeholder asking for it: I saw a hard, real constraint problem and wanted to know if I could model it properly.",
+    ],
+    nerdyDetails: [
+      "Constraint modeling for crew rest rules and duty-time limits",
+      "Aircraft availability and dispatch-window matching",
+      "Open source, self-directed — no client or employer requirement",
+    ],
+    links: { github: "https://github.com/shreyjari/" },
+  },
+  {
+    id: "gia-lookup",
+    vibe: "personal",
+    title: "GIA Diamond Report Lookup Tool",
+    tagline: "I just wanted to know how the site actually worked.",
+    story: [
+      "This one started with no goal beyond curiosity. GIA's diamond report lookup runs through their website one report number at a time, and I found myself wondering what was actually happening under the hood when you hit search.",
+      "So I opened the network tab and watched the traffic — figured out the request shape well enough to call it directly instead of clicking through a form.",
+      "Once I knew how it worked, the obvious next question was whether I could make it less tedious: I built a Google Sheets tool with a custom menu that batch-looks-up report numbers, using UrlFetchApp on the server side of Apps Script to sidestep the CORS restrictions a browser-based fetch would've hit. Paste in a column of report numbers, get structured grading data back.",
+      "Nobody commissioned this. It exists because I wanted to know how the site worked, and then wanted to not have to do it by hand anymore.",
+    ],
+    nerdyDetails: [
+      "Network traffic inspection to reverse-engineer the lookup request",
+      "Google Apps Script custom menu + batch lookup UI in Sheets",
+      "UrlFetchApp for server-side requests, bypassing browser CORS limits",
+    ],
+  },
+  {
+    id: "toronto-recreation",
+    vibe: "civic",
+    title: "TorontoRecreation Mapping App",
+    tagline: "Toronto's recreation programs, mapped somewhere you can actually browse them.",
+    story: [
+      "Toronto has a genuinely large amount of public recreation infrastructure — pools, drop-in programs, community centres — spread across data that isn't always easy to browse in one place.",
+      "This is a civic-minded side project mapping those facilities and programs, built because it seemed like the kind of public information that should be easier to explore than it is.",
+    ],
+    nerdyDetails: [
+      "Open source, geospatial mapping of public facility/program data",
+    ],
+    links: { github: "https://github.com/shreyjari/" },
+  },
+  {
+    id: "immigration-process",
+    vibe: "civic",
+    title: "Immigration Process Solution",
+    tagline: "A genuinely confusing bureaucratic process, made a little less confusing.",
+    story: [
+      "Immigration paperwork is one of those processes where the difficulty isn't the underlying logic, it's that the logic is scattered across forms, portals, and fine print that assume you already know the system.",
+      "This tool exists to make that process more legible for someone going through it — the kind of project that comes from having watched someone (possibly yourself) get stuck on something that should be simpler.",
+    ],
+    nerdyDetails: [
+      "Open source",
+    ],
+    links: { github: "https://github.com/shreyjari/" },
+  },
+  {
+    id: "power-query-toolkit",
+    vibe: "tool",
+    title: "Power Query Utility Toolkit",
+    tagline: "Built after getting burned by the same fragile query one too many times.",
+    story: [
+      "Power Query is great right up until a source column gets renamed, a data type shifts, or an upstream sheet adds a blank row — and then a query that worked yesterday just fails, silently or loudly, usually at the worst moment.",
+      "After hitting that wall enough times across PTAG FM and UKG data sources, I put together a reusable toolkit of M-code patterns — defensive try...otherwise error handling, consistent null and type guards — instead of re-solving the same fragility from scratch in every new query.",
+      "Less exciting than a dashboard, but it's the thing that keeps the dashboards from breaking on a Tuesday for no visible reason.",
+    ],
+    nerdyDetails: [
+      "Reusable M-code patterns for defensive data transformation",
+      "try...otherwise error handling, type and null guards",
+      "Applied across PTAG FM and UKG-sourced queries",
+    ],
+    links: { github: "https://github.com/shreyjari/" },
+  },
+  {
+    id: "watch-automations",
+    vibe: "personal",
+    title: "Apple Watch / Shortcuts Automation Experiments",
+    tagline: "The reflex doesn't clock out. It just gets smaller.",
+    story: [
+      "Not a product, not even really a project — more a running experiment in whether tiny daily annoyances are worth automating away. Turns out most of them are.",
+      "One example: a Shortcuts automation triggered by my phone disconnecting from the car's Bluetooth, which fires a reminder before I've fully forgotten my keys are still in my pocket and not, in fact, in the ignition.",
+      "It's a small thing. But it's the same instinct that drives the enterprise integrations, aimed at a problem with a total stakeholder count of one: me, mildly annoyed, at 7am.",
+    ],
+    nerdyDetails: [
+      "iOS Shortcuts + Bluetooth connection-state triggers",
+      "Watch complications for at-a-glance automation status",
+      "Webhook-triggered automations for cross-device actions",
+    ],
+  },
+  {
+    id: "oauth-spec",
+    vibe: "spec",
+    title: "PTAG FM OAuth 2.0 Client Credentials (M2M) Spec",
+    tagline: "Before writing the integration, I wrote down exactly what it needed to do.",
+    story: [
+      "Not every project starts with code. Adding machine-to-machine authentication to an internal system meant first getting precise about what \"secure\" and \"correct\" actually meant here — token lifetimes, scope boundaries, failure modes, what happens when a credential needs to be rotated.",
+      "I wrote the feature spec for a client-credentials (M2M) OAuth 2.0 flow before implementation started, the kind of document meant to get argued with and revised before anyone commits code to it.",
+      "It's a small artifact next to the integrations it enabled, but it's the one that shows the thinking holds up on paper too, not just in the code that came after.",
+    ],
+    nerdyDetails: [
+      "OAuth 2.0 client-credentials grant specification",
+      "Token lifetime, scope, and credential-rotation design",
+      "Written for internal review prior to implementation",
+    ],
+  },
+];
