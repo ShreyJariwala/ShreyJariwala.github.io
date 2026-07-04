@@ -94,11 +94,16 @@ flowchart TD
 
 ## 5. Outstanding items
 
-| Item | Status |
+Tracked as GitHub Issues on this repo from here on, instead of duplicated
+in this file — see [Issues](https://github.com/shreyjari/shreyjari.github.io/issues)
+for current status.
+
+| Item | Issue |
 |---|---|
-| Site builds & deploys automatically on push | ✅ Done |
-| Live at `https://shreyjari.github.io/`, confirmed by user | ✅ Done |
-| Scroll-lock bug fixed and redeployed | ✅ Done |
-| Formspree ID swapped into `src/components/Contact.jsx` (line 4, currently `YOUR_FORM_ID`) | ⬜ Still needed — form won't deliver messages until this is set |
-| Stray `shreyjari/portfolio` repo from the remote mix-up | ⬜ Optional cleanup — not connected to anything live, safe to delete |
-| Personal photo/avatar | ⬜ Deferred — no slot currently in the design, add when available |
+| Wire up real Formspree ID for contact form | [#1](https://github.com/shreyjari/shreyjari.github.io/issues/1) |
+| Delete or repurpose the stray `shreyjari/portfolio` repo | [#2](https://github.com/shreyjari/shreyjari.github.io/issues/2) |
+| Add personal photo / avatar | [#3](https://github.com/shreyjari/shreyjari.github.io/issues/3) |
+
+Already-resolved items (site deploy pipeline, scroll-lock bug) are
+documented in the issue log above (Section 3) rather than as GitHub
+Issues, since they're closed and the history lives here.
