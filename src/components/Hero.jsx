@@ -1,37 +1,44 @@
 import IndianFlag from "./IndianFlag";
 
+const badges = ["PMP certified", "NetSuite Certified Dev Professional", "6+ yrs in the field"];
+
 export default function Hero() {
   return (
-    <section className="relative min-h-[92svh] flex flex-col justify-center px-6 sm:px-10 lg:px-16 pt-24 pb-16">
-      <div className="max-w-3xl">
-        <p className="text-sm sm:text-base tracking-wide text-ink-soft mb-4 flex items-center gap-2">
-          <IndianFlag className="w-5 h-auto rounded-[2px] shadow-sm" />
-          Surat, India → Toronto, Canada
-        </p>
-
-        <h1 className="font-serif text-[2.6rem] leading-[1.05] sm:text-6xl lg:text-7xl text-ink font-semibold tracking-tight">
-          Shrey Jariwala
-        </h1>
-
-        <p className="mt-6 font-serif italic text-xl sm:text-2xl text-ink-soft max-w-xl leading-snug">
-          A curious systems person who can't leave a manual process alone.
-        </p>
-
-        <p className="mt-6 text-ink-soft max-w-xl leading-relaxed">
-          By day: NetSuite, UKG Ready, Power BI. By instinct: find the seam,
-          reverse-engineer the part nobody documented, build the tool nobody
-          asked for. Below is what that's produced so far.
-        </p>
-
-        <div className="mt-10 flex items-center gap-4 flex-wrap">
-          <a
-            href="#work"
-            className="inline-flex items-center gap-2 bg-rust text-paper px-5 py-3 rounded-full font-medium hover:bg-rust-dark transition-colors"
-          >
-            See what I've been building
-            <span aria-hidden="true">↓</span>
-          </a>
+    <section className="max-w-[1080px] mx-auto px-6 pt-[76px] pb-12 animate-[sjfade_0.7s_ease_both]">
+      <div className="flex items-center gap-3 mb-8">
+        <div className="w-8 h-[21px] rounded-[2px] overflow-hidden shadow-[0_1px_2px_rgba(0,0,0,0.18)]">
+          <IndianFlag className="w-full h-full" />
         </div>
+        <span className="font-mono font-medium text-[12.5px] tracking-wide text-label">
+          Surat, India&nbsp;&nbsp;→&nbsp;&nbsp;Toronto, Canada
+        </span>
+      </div>
+
+      <h1 className="m-0 font-serif font-normal text-[clamp(40px,7vw,68px)] leading-[1.03] tracking-[-0.015em] text-ink">
+        Shrey Jariwala
+      </h1>
+
+      <p className="mt-[26px] font-serif text-[clamp(24px,3.4vw,34px)] leading-[1.28] font-normal max-w-[20ch] text-ink-2">
+        A curious systems person who{" "}
+        <em className="not-italic italic text-blue">can't leave a manual process alone.</em>
+      </p>
+
+      <p className="mt-[26px] text-[16.5px] leading-[1.62] max-w-[56ch] text-ink-mute">
+        Business analyst &amp; NetSuite admin by title. By instinct: find the
+        seam, reverse-engineer the API nobody documented, build the tool
+        nobody asked for, automate the annoying part. The throughline isn't
+        the tool — it's the reflex.
+      </p>
+
+      <div className="flex flex-wrap gap-2.5 mt-[30px] font-mono text-[11.5px]">
+        {badges.map((b) => (
+          <span
+            key={b}
+            className="px-[11px] py-1.5 border border-line rounded-full text-label bg-card"
+          >
+            {b}
+          </span>
+        ))}
       </div>
     </section>
   );
