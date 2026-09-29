@@ -1,0 +1,647 @@
+<title>Tiny Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Layout: one phone-width lab notebook column, sticky header + tab bar; sheets slide up from the bottom. */
+:root {
+  --bg: #eef3f2;
+  --surface: #ffffff;
+  --surface-2: #e2eae9;
+  --ink: #122022;
+  --muted: #5d7374;
+  --line: #d3dfde;
+  --accent: #0f7a85;
+  --accent-ink: #ffffff;
+  --accent-soft: #d6ecee;
+  --done: #2f9e5b;
+  --miss: #d0493f;
+  --warn: #b86b00;
+  --scrim: rgba(10, 20, 22, .42);
+  --font-display: "Bricolage Grotesque", "Avenir Next", system-ui, sans-serif;
+  --font-body: "IBM Plex Sans", -apple-system, "Segoe UI", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0c1415; --surface: #142123; --surface-2: #1d2e30; --ink: #e4efee; --muted: #8ea6a6;
+    --line: #243a3c; --accent: #45b8c2; --accent-ink: #062226; --accent-soft: #173b3f;
+    --done: #45b870; --miss: #e2665c; --warn: #e0a042; --scrim: rgba(0,0,0,.6); color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0c1415; --surface: #142123; --surface-2: #1d2e30; --ink: #e4efee; --muted: #8ea6a6;
+  --line: #243a3c; --accent: #45b8c2; --accent-ink: #062226; --accent-soft: #173b3f;
+  --done: #45b870; --miss: #e2665c; --warn: #e0a042; --scrim: rgba(0,0,0,.6); color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body { background: var(--bg); color: var(--ink); font: 15px/1.45 var(--font-body); margin: 0; }
+button, input, textarea, select { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.app { max-width: 460px; margin: 0 auto; min-height: 100%; display: flex; flex-direction: column; background: var(--bg); }
+@media (min-width: 520px) { .app { border-inline: 1px solid var(--line); } }
+
+.top { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg); padding: 14px 16px 10px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid var(--line); }
+.top h1 { font: 700 1.6rem/1.1 var(--font-display); margin: 0; flex: 1; letter-spacing: -.01em; text-wrap: balance; }
+.top .date { display: block; font: 500 .72rem var(--font-mono); color: var(--muted); letter-spacing: .06em; text-transform: uppercase; margin-bottom: 2px; }
+.icon-btn { border: 0; background: var(--accent-soft); color: var(--accent); width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center; flex: none; }
+.back { border: 0; background: none; color: var(--accent); padding: 6px 0; font-weight: 600; display: flex; align-items: center; gap: 2px; }
+
+main { flex: 1; padding: 12px 16px 24px; display: flex; flex-direction: column; gap: 18px; }
+.demo-note { font-size: .78rem; color: var(--muted); background: var(--surface-2); border-radius: 10px; padding: 8px 12px; }
+
+section h2 { font: 500 .72rem var(--font-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin: 0 0 6px 4px; }
+.group { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
+.group > * + * { border-top: 1px solid var(--line); }
+.foot { font-size: .78rem; color: var(--muted); margin: 6px 4px 0; }
+.pad { padding: 12px 14px; }
+
+.progress { padding: 12px 14px; display: grid; gap: 8px; }
+.progress b { font-weight: 600; }
+.bar { height: 8px; background: var(--surface-2); border-radius: 99px; overflow: hidden; }
+.bar > i { display: block; height: 100%; background: var(--accent); border-radius: 99px; transition: width .3s ease; }
+
+.row { display: flex; align-items: center; gap: 8px; padding: 10px 10px 10px 14px; }
+.row-main { flex: 1; min-width: 0; text-align: left; border: 0; background: none; padding: 2px 0; display: grid; gap: 2px; }
+.row-title { font-weight: 600; overflow-wrap: anywhere; }
+.row-sub { font: 500 .75rem var(--font-mono); color: var(--muted); font-variant-numeric: tabular-nums; }
+.log { width: 44px; height: 44px; border-radius: 50%; border: 0; display: grid; place-items: center; flex: none; transition: transform .12s ease, background .15s; }
+.log:active { transform: scale(.9); }
+.log.miss { background: color-mix(in srgb, var(--miss) 14%, transparent); color: var(--miss); }
+.log.done { background: color-mix(in srgb, var(--done) 14%, transparent); color: var(--done); }
+.log.miss.on { background: var(--miss); color: #fff; }
+.log.done.on { background: var(--done); color: #fff; }
+.link-row { display: flex; align-items: center; gap: 10px; width: 100%; border: 0; background: none; text-align: left; padding: 12px 14px; }
+.link-row .grow { flex: 1; min-width: 0; display: grid; gap: 2px; }
+.chev { color: var(--muted); flex: none; }
+.pill { font: 600 .7rem var(--font-body); padding: 2px 8px; border-radius: 99px; background: var(--accent-soft); color: var(--accent); white-space: nowrap; }
+.pill.warn { background: color-mix(in srgb, var(--warn) 16%, transparent); color: var(--warn); }
+
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(64px, 1fr)); gap: 4px; padding: 12px 8px; }
+.stat { text-align: center; display: grid; gap: 1px; }
+.stat b { font: 700 1.25rem var(--font-display); font-variant-numeric: tabular-nums; }
+.stat span { font-size: .7rem; color: var(--muted); }
+
+.hero { padding: 14px; display: grid; gap: 8px; }
+.hero > * + * { border-top: 0; }
+.hero h3 { font: 700 1.3rem/1.2 var(--font-display); margin: 0; text-wrap: balance; }
+.hero .q { color: var(--muted); font-style: italic; }
+.meta { font: 500 .75rem var(--font-mono); color: var(--muted); }
+
+.grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; padding: 12px; }
+.cell { aspect-ratio: 1; max-width: 100%; border-radius: 8px; border: 0; background: var(--surface-2); color: var(--muted); font: 500 .75rem var(--font-mono); position: relative; display: grid; place-items: center; }
+.cell.d { background: var(--done); color: #fff; }
+.cell.m { background: var(--miss); color: #fff; }
+.cell.today { box-shadow: 0 0 0 2px var(--ink); }
+.cell.future { opacity: .35; cursor: default; }
+.cell .dot { position: absolute; top: 4px; right: 4px; width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
+.seg { display: flex; background: var(--surface-2); border-radius: 10px; padding: 3px; gap: 3px; }
+.seg button { flex: 1; border: 0; background: none; padding: 6px 4px; border-radius: 8px; font-size: .82rem; font-weight: 500; color: var(--muted); }
+.seg button.on { background: var(--surface); color: var(--ink); box-shadow: 0 1px 2px rgba(0,0,0,.12); }
+
+.field { display: grid; gap: 4px; padding: 10px 14px; }
+.field label, .lbl { font-size: .75rem; color: var(--muted); font-weight: 500; }
+.field input, .field textarea, .field select { border: 0; background: transparent; padding: 2px 0; width: 100%; resize: vertical; outline: none; }
+.field textarea { min-height: 2.6em; }
+.field:focus-within { background: color-mix(in srgb, var(--accent) 6%, transparent); }
+.btn-row { display: flex; flex-wrap: wrap; gap: 8px; padding: 12px 14px; }
+.btn { border: 1px solid var(--line); background: var(--surface); padding: 9px 14px; border-radius: 10px; font-weight: 600; font-size: .88rem; display: inline-flex; align-items: center; gap: 6px; }
+.btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.btn.danger { color: var(--miss); }
+.btn.block { width: 100%; justify-content: center; }
+.action { width: 100%; border: 0; background: none; text-align: left; padding: 12px 14px; color: var(--accent); font-weight: 600; display: flex; gap: 8px; align-items: center; }
+.action.danger { color: var(--miss); }
+.action { flex-wrap: wrap; row-gap: 0; }
+.action small { flex-basis: 100%; font-size: .8rem; color: var(--muted); font-weight: 400; }
+
+.levels { display: flex; gap: 4px; }
+.levels i { flex: 1; height: 6px; border-radius: 99px; background: var(--surface-2); }
+.levels i.on { background: var(--accent); }
+.chips { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 2px; }
+.chip { border: 1px solid var(--line); background: var(--surface); border-radius: 99px; padding: 5px 12px; font-size: .82rem; white-space: nowrap; }
+.chip.on { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.empty { padding: 28px 18px; text-align: center; display: grid; gap: 10px; justify-items: center; color: var(--muted); }
+.empty h3 { font: 700 1.15rem var(--font-display); color: var(--ink); margin: 0; }
+
+.tabs { position: sticky; bottom: 0; z-index: 5; display: grid; grid-template-columns: repeat(4, 1fr); background: var(--surface); border-top: 1px solid var(--line); padding: 6px 4px calc(6px + env(safe-area-inset-bottom, 0px)); }
+.tabs button { border: 0; background: none; display: grid; justify-items: center; gap: 2px; font-size: .68rem; font-weight: 500; color: var(--muted); padding: 4px 0; }
+.tabs button.on { color: var(--accent); }
+
+.scrim { position: fixed; inset: 0; background: var(--scrim); z-index: 20; display: flex; align-items: flex-end; justify-content: center; }
+.sheet { background: var(--bg); width: 100%; max-width: 460px; max-height: 88%; overflow-y: auto; border-radius: 18px 18px 0 0; padding: 8px 16px calc(18px + env(safe-area-inset-bottom, 0px)); display: grid; gap: 14px; animation: up .22s ease-out; }
+.sheet .grab { width: 36px; height: 5px; border-radius: 99px; background: var(--line); margin: 2px auto 0; }
+.sheet-head { display: flex; align-items: center; gap: 8px; }
+.sheet-head h3 { flex: 1; margin: 0; font: 700 1.15rem var(--font-display); text-align: center; }
+.sheet-head button { border: 0; background: none; color: var(--accent); font-weight: 600; min-width: 60px; }
+.sheet-head button:first-child { text-align: left; font-weight: 400; }
+.sheet-head button:last-child { text-align: right; }
+.sheet-head button:disabled { color: var(--muted); opacity: .6; cursor: default; }
+@keyframes up { from { transform: translateY(30px); opacity: .4; } }
+@media (prefers-reduced-motion: reduce) { .sheet { animation: none; } .bar > i, .log { transition: none; } }
+.reason { display: flex; gap: 12px; align-items: center; width: 100%; border: 0; background: none; text-align: left; padding: 12px 14px; }
+.reason b { display: block; }
+.reason span { color: var(--muted); font-size: .82rem; }
+.check { display: flex; gap: 8px; align-items: center; padding: 8px 14px; font-size: .88rem; }
+.check .ok { color: var(--done); }
+.check .no { color: var(--muted); }
+.check em { margin-left: auto; font-style: normal; font-size: .75rem; color: var(--muted); }
+.stepper { display: flex; align-items: center; gap: 10px; padding: 10px 14px; }
+.stepper b { flex: 1; font-weight: 500; }
+.stepper button { width: 34px; height: 30px; border: 1px solid var(--line); background: var(--surface); border-radius: 8px; }
+.inline { display: flex; align-items: baseline; gap: 6px; }
+.inline span { color: var(--muted); white-space: nowrap; }
+pre.json { margin: 0; max-height: 240px; overflow: auto; font: .72rem/1.4 var(--font-mono); padding: 12px; background: var(--surface-2); border-radius: 10px; white-space: pre; }
+.toast { position: fixed; left: 50%; bottom: 84px; transform: translateX(-50%); background: var(--ink); color: var(--bg); padding: 8px 14px; border-radius: 99px; font-size: .85rem; z-index: 30; }
+.guide { padding: 12px 14px; display: grid; gap: 4px; }
+.guide b { font: 700 1rem var(--font-display); }
+.guide p { margin: 0; color: var(--muted); font-size: .88rem; max-width: 60ch; }
+</style>
+
+<div class="app" id="app"></div>
+<div id="overlay" hidden></div>
+<div id="toast" class="toast" hidden></div>
+
+<script>
+(() => {
+  // ---------- dates (local calendar days as YYYY-MM-DD) ----------
+  const pad = n => String(n).padStart(2, "0");
+  const K = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+  const parse = k => { const [y, m, d] = k.split("-").map(Number); return new Date(y, m - 1, d); };
+  const today = () => K(new Date());
+  const addDays = (k, n) => { const d = parse(k); d.setDate(d.getDate() + n); return K(d); };
+  const diff = (a, b) => { const [y1, m1, d1] = a.split("-").map(Number), [y2, m2, d2] = b.split("-").map(Number); return Math.round((Date.UTC(y2, m2 - 1, d2) - Date.UTC(y1, m1 - 1, d1)) / 864e5); };
+  const fmt = (k, o = { month: "short", day: "numeric" }) => parse(k).toLocaleDateString(undefined, o);
+  const uid = () => Math.random().toString(36).slice(2, 10);
+  const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+  // ---------- vocabulary (mirrors the iOS enums) ----------
+  const STATUS = { active: "Running", paused: "Paused", completed: "Done", operationalized: "Practice" };
+  const REASONS = {
+    head: ["Head", "Didn't make sense / unclear why", "Mostly Head: clarify why this matters, or change the question."],
+    heart: ["Heart", "Didn't feel like it / not exciting", "Mostly Heart: redesign it so it's more fun, or pivot."],
+    hand: ["Hand", "Too hard / no time / no tools", "Mostly Hand: make it smaller or easier to start."],
+    life: ["Life happened", "Outside my control", "Mostly Life: consider a different time slot."]
+  };
+  const KINDS = { insight: "Insight", artifact: "Artifact", data: "Data", link: "Link" };
+  const LEVELS = ["exploring", "practicing", "proficient", "teaching"];
+  const cap1 = s => s.charAt(0).toUpperCase() + s.slice(1);
+
+  // ---------- sample data (relative to today) ----------
+  function seed() {
+    const t = today();
+    const logs = (start, pattern) => { const o = {}; [...pattern].forEach((c, i) => { const k = addDays(start, i); if (c === "1") o[k] = { did: true, note: "" }; if (c === "0") o[k] = { did: false, reason: "hand", note: "" }; }); return o; };
+    const capA = { id: uid(), name: "Data storytelling", why: "Turn finance numbers into decisions people act on.", target: "A dashboard a VP reads without me in the room.", level: "practicing" };
+    const capB = { id: uid(), name: "Clear writing", why: "Most of my work lands as written words.", target: "One-page memos that need no follow-up meeting.", level: "exploring" };
+    const pivotSrc = { id: uid(), action: "journal every night", question: "Does journaling at night help me think?", duration: 7, start: addDays(t, -24), metric: "", status: "completed", decision: "pivot",
+      plus: "Captured good ideas.", minus: "Too tired at night; skipped 3 of 7.", next: "Does writing first thing make my day clearer?", routine: "", capId: capB.id, pivotFrom: null,
+      logs: logs(addDays(t, -24), "1010110"), outputs: [] };
+    const A = { id: uid(), action: "write 200 words before email", question: "Does writing first thing make my day clearer?", duration: 14, start: addDays(t, -8), metric: "words", status: "active", decision: "undecided",
+      plus: "", minus: "", next: "", routine: "", capId: capB.id, pivotFrom: pivotSrc.id, logs: logs(addDays(t, -8), "11101011"), outputs: [
+        { id: uid(), title: "Draft: why our forecast drifts", kind: "artifact", detail: "Four short paragraphs, good enough to send.", link: "", op: false, opNote: "", date: addDays(t, -3) }] };
+    Object.values(A.logs).forEach((l, i) => { if (l.did) l.value = [210, 240, 200, 0, 260, 0, 230, 205][i]; });
+    A.logs[addDays(t, -5)].reason = "heart";
+    A.logs[addDays(t, -2)].note = "Easier when I set the topic the night before.";
+    const B = { id: uid(), action: "build one Power BI visual from real data", question: "Which chart type do stakeholders actually read?", duration: 7, start: addDays(t, -8), metric: "", status: "active", decision: "undecided",
+      plus: "", minus: "", next: "", routine: "", capId: capA.id, pivotFrom: null, logs: logs(addDays(t, -8), "1101111"), outputs: [
+        { id: uid(), title: "Variance waterfall template", kind: "artifact", detail: "Reusable DAX + visual for monthly variance.", link: "", op: true, opNote: "Used in the monthly close pack.", date: addDays(t, -4) },
+        { id: uid(), title: "Bar beats donut for budget splits", kind: "insight", detail: "People compared lengths faster in the review.", link: "", op: false, opNote: "", date: addDays(t, -2) }] };
+    const C = { id: uid(), action: "read 10 pages", question: "Does a small daily reading habit stick?", duration: 21, start: addDays(t, -40), metric: "pages", status: "operationalized", decision: "persist",
+      plus: "Stuck easily once it was tied to bedtime.", minus: "", next: "", routine: "Weeknights 9:30pm, phone in the other room", capId: capB.id, pivotFrom: null,
+      logs: logs(addDays(t, -40), "1111011111110111111111011111111111101111"), outputs: [], opAt: addDays(t, -19) };
+    Object.values(C.logs).forEach(l => { if (l.did) l.value = 10; });
+    return { pacts: [A, B, C, pivotSrc], caps: [capA, capB] };
+  }
+
+  // ---------- state + storage ----------
+  const KEY = "tinylab-demo-v1";
+  let db;
+  try { db = JSON.parse(localStorage.getItem(KEY)); } catch (e) { db = null; }
+  if (!db || !Array.isArray(db.pacts)) db = seed();
+  const save = () => { try { localStorage.setItem(KEY, JSON.stringify(db)); } catch (e) { /* storage unavailable: demo still works in memory */ } };
+  const ui = { tab: "today", stack: [], labFilter: "all", gridMode: "log", persistDays: 14 };
+  const P = id => db.pacts.find(p => p.id === id);
+  const C = id => db.caps.find(c => c.id === id);
+
+  // ---------- pact math (ported from Models.swift) ----------
+  const endKey = p => addDays(p.start, Math.max(p.duration, 1) - 1);
+  const dayNum = (p, k = today()) => diff(p.start, k) + 1;
+  const needsReview = p => p.status === "active" && today() > endKey(p);
+  const tracked = p => { const n = dayNum(p); return p.status === "operationalized" ? Math.max(n, 0) : Math.max(0, Math.min(n, p.duration)); };
+  const doneCount = p => Object.values(p.logs).filter(l => l.did).length;
+  const rate = p => { const d = tracked(p); return d > 0 ? Math.min(doneCount(p) / d, 1) : 0; };
+  const pct = x => `${Math.round(x * 100)}%`;
+  const streak = p => { let k = today(), n = 0; if (!p.logs[k]?.did) k = addDays(k, -1); while (p.logs[k]?.did) { n++; k = addDays(k, -1); } return n; };
+  const best = p => { const ks = Object.keys(p.logs).filter(k => p.logs[k].did).sort(); let b = 0, r = 0, prev = null; for (const k of ks) { r = prev && diff(prev, k) === 1 ? r + 1 : 1; b = Math.max(b, r); prev = k; } return b; };
+  const metricTotal = p => Object.values(p.logs).reduce((s, l) => s + (Number(l.value) || 0), 0);
+  const reasonCounts = p => { const c = {}; Object.values(p.logs).forEach(l => { if (!l.did && l.reason) c[l.reason] = (c[l.reason] || 0) + 1; }); return Object.entries(c); };
+  const gridDays = p => { const last = p.status === "operationalized" ? (today() > p.start ? today() : p.start) : endKey(p); const n = diff(p.start, last) + 1; return Array.from({ length: Math.max(n, 1) }, (_, i) => addDays(p.start, i)); };
+  const title = p => p.status === "operationalized" ? p.action : `I will ${p.action} for ${p.duration} days`;
+  const capPacts = c => db.pacts.filter(p => p.capId === c.id);
+
+  function setLog(p, k, did) { p.logs[k] = { ...(p.logs[k] || { note: "" }), did }; if (did) delete p.logs[k].reason; save(); }
+  function clearLog(p, k) { delete p.logs[k]; save(); }
+
+  // ---------- icons ----------
+  const I = {
+    check: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg>',
+    x: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>',
+    plus: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>',
+    chev: '<svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg>',
+    back: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>',
+    today: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.8 2.8L16.5 9.5"/></svg>',
+    flask: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6M10 3v6L4.5 19a1.5 1.5 0 0 0 1.3 2h12.4a1.5 1.5 0 0 0 1.3-2L14 9V3"/><path d="M7 15h10"/></svg>',
+    stack: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 3l9 5-9 5-9-5 9-5z"/><path d="M3 13l9 5 9-5"/></svg>',
+    gear: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M2 12h3M19 12h3M4.9 19.1L7 17M17 7l2.1-2.1"/></svg>',
+    cog2: '⚙︎'
+  };
+
+  // ---------- views ----------
+  const $app = document.getElementById("app");
+  const top = (h, right = "", sub = "") => `<header class="top">${ui.stack.length ? `<button class="back" data-act="back">${I.back}Back</button><h1></h1>` : `<h1>${sub ? `<span class="date">${sub}</span>` : ""}${esc(h)}</h1>`}${right}</header>`;
+  const plusBtn = act => `<button class="icon-btn" data-act="${act}" aria-label="New">${I.plus}</button>`;
+  const tabs = () => `<nav class="tabs">${[["today", "Today", I.today], ["lab", "Lab", I.flask], ["caps", "Capabilities", I.stack], ["settings", "Settings", I.gear]].map(([k, l, i]) => `<button class="${ui.tab === k ? "on" : ""}" data-act="tab" data-v="${k}">${i}${l}</button>`).join("")}</nav>`;
+  const levelBar = lv => `<div class="levels" aria-label="Level ${cap1(lv)}">${LEVELS.map((l, i) => `<i class="${i <= LEVELS.indexOf(lv) ? "on" : ""}"></i>`).join("")}</div>`;
+  const summaryRow = p => {
+    const n = p.outputs.length;
+    return `<button class="link-row" data-act="open" data-id="${p.id}"><span class="grow"><span class="row-title">${esc(p.action)}</span><span class="row-sub">${fmt(p.start)} · ${pct(rate(p))} · ${doneCount(p)} reps${n ? ` · ${n} outputs` : ""}${p.pivotFrom ? " · pivot" : ""}</span></span>${needsReview(p) ? '<span class="pill warn">Review</span>' : `<span class="pill">${STATUS[p.status]}</span>`}${I.chev}</button>`;
+  };
+
+  function todayRow(p) {
+    const l = p.logs[today()];
+    const s = streak(p), fire = s > 0 ? ` · 🔥${s}` : "";
+    const sub = p.status === "operationalized" ? `Practice${p.capId && C(p.capId) ? " · " + esc(C(p.capId).name) : ""}${fire}` : `Day ${Math.min(dayNum(p), p.duration)}/${p.duration}${fire} · ${pct(rate(p))}`;
+    return `<div class="row"><button class="row-main" data-act="open" data-id="${p.id}"><span class="row-title">${esc(p.action)}</span><span class="row-sub">${sub}</span></button>
+      <button class="log miss ${l && !l.did ? "on" : ""}" data-act="miss" data-id="${p.id}" aria-label="Didn't do it today">${I.x}</button>
+      <button class="log done ${l?.did ? "on" : ""}" data-act="done" data-id="${p.id}" aria-label="Did it today">${I.check}</button></div>`;
+  }
+
+  function viewToday() {
+    const act = db.pacts.filter(p => p.status === "active");
+    const running = act.filter(p => !needsReview(p) && dayNum(p) >= 1);
+    const upcoming = act.filter(p => dayNum(p) < 1);
+    const review = act.filter(needsReview);
+    const practices = db.pacts.filter(p => p.status === "operationalized");
+    const loggable = [...running, ...practices];
+    const logged = loggable.filter(p => p.logs[today()]).length;
+    const dateLbl = new Date().toLocaleDateString(undefined, { weekday: "long", month: "short", day: "numeric" });
+    let h = top("Today", plusBtn("newPact"), dateLbl) + "<main>";
+    h += `<p class="demo-note">Web demo of the Tiny Lab iOS app with sample pacts. Tap ✓ or ✕ to log today. Changes stay in this browser; reset them in Settings.</p>`;
+    if (loggable.length) h += `<div class="group"><div class="progress"><span><b>${logged} of ${loggable.length}</b> logged today</span><div class="bar"><i style="width:${loggable.length ? (logged / loggable.length) * 100 : 0}%"></i></div></div></div>`;
+    if (review.length) h += `<section><h2>Pact finished · persist, pause or pivot?</h2><div class="group">${review.map(summaryRow).join("")}</div></section>`;
+    if (running.length) h += `<section><h2>Experiments</h2><div class="group">${running.map(todayRow).join("")}</div></section>`;
+    if (practices.length) h += `<section><h2>Practices</h2><div class="group">${practices.map(todayRow).join("")}</div><p class="foot">Operationalized pacts. No end date, still logged daily.</p></section>`;
+    if (upcoming.length) h += `<section><h2>Upcoming</h2><div class="group">${upcoming.map(p => `<button class="link-row" data-act="open" data-id="${p.id}"><span class="grow"><span class="row-title">${esc(p.action)}</span><span class="row-sub">Starts ${fmt(p.start)}</span></span>${I.chev}</button>`).join("")}</div></section>`;
+    if (!loggable.length && !review.length && !upcoming.length) h += `<div class="group empty"><h3>No experiments running</h3><p>Make a pact: I will [action] for [duration].</p><button class="btn primary" data-act="newPact">New pact</button></div>`;
+    return h + "</main>";
+  }
+
+  function viewLab() {
+    const f = ui.labFilter;
+    const all = [...db.pacts].sort((a, b) => b.start.localeCompare(a.start));
+    const list = f === "all" ? all : all.filter(p => p.status === f);
+    const reps = db.pacts.reduce((s, p) => s + doneCount(p), 0);
+    const due = db.pacts.reduce((s, p) => s + tracked(p), 0);
+    const outs = db.pacts.reduce((s, p) => s + p.outputs.length, 0);
+    let h = top("Lab", plusBtn("newPact")) + "<main>";
+    h += `<div class="group"><div class="stats"><div class="stat"><b>${db.pacts.length}</b><span>pacts</span></div><div class="stat"><b>${reps}</b><span>reps</span></div><div class="stat"><b>${pct(due ? Math.min(reps / due, 1) : 0)}</b><span>hit rate</span></div><div class="stat"><b>${outs}</b><span>outputs</span></div></div></div>`;
+    h += `<div class="chips">${[["all", "All"], ["active", "Running"], ["operationalized", "Practices"], ["completed", "Done"], ["paused", "Paused"]].map(([k, l]) => `<button class="chip ${f === k ? "on" : ""}" data-act="labFilter" data-v="${k}">${l}</button>`).join("")}</div>`;
+    h += list.length ? `<div class="group">${list.map(summaryRow).join("")}</div>` : `<div class="group empty"><p>Nothing here yet.</p></div>`;
+    return h + "</main>";
+  }
+
+  function viewPact(p) {
+    const cap = p.capId && C(p.capId);
+    const dateLine = p.status === "operationalized" ? `Started ${fmt(p.start)} · practice since ${fmt(p.opAt || today())}` : `${fmt(p.start)} → ${fmt(endKey(p))}`;
+    let h = top("", `<button class="icon-btn" data-act="pactMenu" data-id="${p.id}" aria-label="More">···</button>`) + "<main>";
+    h += `<div class="group hero"><div><span class="pill">${STATUS[p.status]}</span></div><h3>${esc(title(p))}</h3>${p.question ? `<div class="q">${esc(p.question)}</div>` : ""}<div class="meta">${dateLine}</div>${cap ? `<div class="meta">Builds: ${esc(cap.name)}</div>` : ""}${p.status === "operationalized" && p.routine ? `<div class="meta">↻ ${esc(p.routine)}</div>` : ""}</div>`;
+    h += `<div class="group"><div class="stats"><div class="stat"><b>${doneCount(p)}/${tracked(p)}</b><span>done</span></div><div class="stat"><b>${pct(rate(p))}</b><span>hit rate</span></div><div class="stat"><b>${streak(p)}</b><span>streak</span></div><div class="stat"><b>${best(p)}</b><span>best</span></div>${p.metric ? `<div class="stat"><b>${metricTotal(p)}</b><span>${esc(p.metric)}</span></div>` : ""}</div></div>`;
+    const t = today();
+    h += `<section><h2>Log</h2><div class="group"><div class="pad" style="padding-bottom:0"><div class="seg"><button class="${ui.gridMode === "log" ? "on" : ""}" data-act="gridMode" data-v="log">Tap to log</button><button class="${ui.gridMode === "note" ? "on" : ""}" data-act="gridMode" data-v="note">Tap to add note</button></div></div><div class="grid">${gridDays(p).map(k => { const l = p.logs[k]; const fut = k > t; return `<button class="cell ${l ? (l.did ? "d" : "m") : ""} ${k === t ? "today" : ""} ${fut ? "future" : ""}" data-act="cell" data-id="${p.id}" data-k="${k}" ${fut ? "disabled" : ""} aria-label="${fmt(k)}${l ? (l.did ? " done" : " missed") : ""}">${parse(k).getDate()}${l?.note ? '<span class="dot"></span>' : ""}</button>`; }).join("")}</div></div><p class="foot">${ui.gridMode === "log" ? "Tap a day: done → missed → clear." : "Tap a day to add a field note or a value."}</p></section>`;
+    const rc = reasonCounts(p);
+    if (rc.length) {
+      const topR = rc.reduce((a, b) => (b[1] > a[1] ? b : a))[0];
+      h += `<section><h2>Triple Check · why I missed</h2><div class="group">${rc.map(([r, n]) => `<div class="row" style="padding-right:14px"><span class="row-main" style="cursor:default">${REASONS[r][0]}</span><span class="row-sub">${n}×</span></div>`).join("")}</div><p class="foot">${REASONS[topR][2]}</p></section>`;
+    }
+    h += `<section><h2>Outputs</h2><div class="group">${p.outputs.slice().sort((a, b) => b.date.localeCompare(a.date)).map(o => `<button class="link-row" data-act="editOutput" data-id="${p.id}" data-o="${o.id}"><span class="grow"><span class="row-title">${esc(o.title)}</span><span class="row-sub">${KINDS[o.kind]} · ${fmt(o.date)}${o.op ? " · in use" : ""}</span></span>${o.op ? `<span class="pill">${I.cog2} in use</span>` : ""}${I.chev}</button>`).join("")}<button class="action" data-act="addOutput" data-id="${p.id}">${I.plus} Log output</button></div><p class="foot">What did this experiment produce? Insights, things you made, data.</p></section>`;
+    h += `<section><h2>${needsReview(p) ? "Review · pact finished" : "Review"}</h2><div class="group">
+      <div class="field"><label for="plus-${p.id}">Plus: what worked</label><textarea id="plus-${p.id}" rows="2" data-bind="plus" data-id="${p.id}">${esc(p.plus)}</textarea></div>
+      <div class="field"><label for="minus-${p.id}">Minus: what didn't</label><textarea id="minus-${p.id}" rows="2" data-bind="minus" data-id="${p.id}">${esc(p.minus)}</textarea></div>
+      <div class="field"><label for="next-${p.id}">Next: what I'll try</label><textarea id="next-${p.id}" rows="2" data-bind="next" data-id="${p.id}">${esc(p.next)}</textarea></div>`;
+    if (p.status === "active" || p.status === "paused") {
+      h += `<div class="stepper"><b>Persist: +${ui.persistDays} days</b><button data-act="persistStep" data-v="-1" aria-label="Fewer days">−</button><button data-act="persistStep" data-v="1" aria-label="More days">+</button></div>
+        <button class="action" data-act="persist" data-id="${p.id}">↻ Persist<small>Keep going for ${ui.persistDays} more days</small></button>
+        ${p.status === "active" ? `<button class="action" data-act="pause" data-id="${p.id}">❙❙ Pause<small>Stop for now, keep the data</small></button>` : ""}
+        <button class="action" data-act="pivot" data-id="${p.id}">⤳ Pivot<small>Change one thing and start a new pact</small></button>`;
+    }
+    if (p.decision !== "undecided") h += `<div class="check">Decision<em style="font-size:.88rem;color:var(--ink)">${cap1(p.decision)}</em></div>`;
+    h += `</div><p class="foot">Success means you ran the pact, whatever the outcome. Decide from the data.</p></section>`;
+    h += `<section><h2>Operationalize</h2><div class="group">${p.status === "operationalized" ? `<button class="action" data-act="operationalize" data-id="${p.id}">Edit routine and capability</button><button class="action" data-act="retire" data-id="${p.id}">Retire practice</button>` : `<button class="action" data-act="operationalize" data-id="${p.id}">${I.cog2} Operationalize: make it a practice<small>Keeps running with no end date and feeds a capability</small></button>`}</div></section>`;
+    return h + "</main>";
+  }
+
+  function viewCaps() {
+    let h = top("Capabilities", plusBtn("newCap")) + "<main>";
+    if (!db.caps.length) return h + `<div class="group empty"><h3>No capabilities yet</h3><p>When an experiment earns its place, operationalize it. Practices roll up into capabilities.</p><button class="btn primary" data-act="newCap">New capability</button></div></main>`;
+    h += `<div class="group">${db.caps.map(c => { const ps = capPacts(c); const pr = ps.filter(p => p.status === "operationalized").length; return `<button class="link-row" data-act="openCap" data-id="${c.id}"><span class="grow" style="gap:6px"><span style="display:flex;gap:8px;align-items:baseline"><span class="row-title" style="flex:1">${esc(c.name)}</span><span class="pill">${cap1(c.level)}</span></span>${levelBar(c.level)}<span class="row-sub">${ps.length - pr} experiments · ${pr} practices · ${ps.reduce((s, p) => s + doneCount(p), 0)} reps</span></span>${I.chev}</button>`; }).join("")}</div>`;
+    h += `<p class="foot">Experiment → practice → capability. Levels: Exploring, Practicing, Proficient, Teaching.</p>`;
+    return h + "</main>";
+  }
+
+  function viewCap(c) {
+    const ps = capPacts(c), pr = ps.filter(p => p.status === "operationalized"), ex = ps.filter(p => p.status !== "operationalized");
+    const outs = ps.flatMap(p => p.outputs).sort((a, b) => b.date.localeCompare(a.date));
+    let h = top("", `<button class="icon-btn" data-act="delCap" data-id="${c.id}" aria-label="Delete capability" style="color:var(--miss)">${I.x}</button>`) + "<main>";
+    h += `<div class="group"><div class="field"><label for="cap-name">Capability</label><input id="cap-name" data-cbind="name" data-id="${c.id}" value="${esc(c.name)}" style="font:700 1.25rem var(--font-display)"></div><div class="pad" style="display:grid;gap:8px"><div class="seg">${LEVELS.map(l => `<button class="${c.level === l ? "on" : ""}" data-act="level" data-id="${c.id}" data-v="${l}">${cap1(l)}</button>`).join("")}</div>${levelBar(c.level)}</div></div>`;
+    h += `<section><h2>Program</h2><div class="group"><div class="field"><label for="cap-why">Why this matters to me</label><textarea id="cap-why" rows="2" data-cbind="why" data-id="${c.id}">${esc(c.why)}</textarea></div><div class="field"><label for="cap-target">What good looks like</label><textarea id="cap-target" rows="2" data-cbind="target" data-id="${c.id}">${esc(c.target)}</textarea></div></div></section>`;
+    h += `<section><h2>Evidence</h2><div class="group"><div class="stats"><div class="stat"><b>${ex.length}</b><span>experiments</span></div><div class="stat"><b>${pr.length}</b><span>practices</span></div><div class="stat"><b>${ps.reduce((s, p) => s + doneCount(p), 0)}</b><span>reps</span></div><div class="stat"><b>${outs.filter(o => o.op).length}/${outs.length}</b><span>outputs in use</span></div></div></div></section>`;
+    h += `<section><h2>Practices (operationalized)</h2><div class="group">${pr.length ? pr.map(summaryRow).join("") : `<div class="pad foot" style="margin:0">Operationalize an experiment to add a practice.</div>`}</div></section>`;
+    h += `<section><h2>Experiments</h2><div class="group">${ex.map(summaryRow).join("")}<button class="action" data-act="newPact" data-cap="${c.id}">${I.plus} Start an experiment for this</button></div></section>`;
+    if (outs.length) h += `<section><h2>Outputs</h2><div class="group">${outs.map(o => `<div class="link-row" style="cursor:default"><span class="grow"><span class="row-title">${esc(o.title)}</span><span class="row-sub">${KINDS[o.kind]} · ${fmt(o.date)}</span></span>${o.op ? `<span class="pill">${I.cog2} in use</span>` : ""}</div>`).join("")}</div></section>`;
+    return h + "</main>";
+  }
+
+  const GUIDE = [
+    ["Pact", "“I will [action] for [duration].” A small commitment to try something. It's a test, not a goal to hit. Success means you ran it."],
+    ["PACT", "Purposeful (a question you care about), Actionable (a concrete thing you do), Continuous (repeated for a set time), Trackable (you know whether you did it)."],
+    ["Growth loops", "Act, reflect, adjust. Progress comes in loops, not up a ladder. Each pact is one loop."],
+    ["Triple Check", "When you don't do it, ask why. Head: does it make sense? Heart: does it feel good? Hand: is it doable? Each answer points to a different fix."],
+    ["Plus / Minus / Next", "Three quick lines: what worked, what didn't, what you'll try next. Five minutes at most."],
+    ["Persist / Pause / Pivot", "At the end of a pact, decide from the data: keep going, stop for now, or change one thing and start a new pact."],
+    ["Cognitive scripts", "Watch for the Sequel (doing what you've always done), the Crowd-pleaser (doing what others expect) and the Epic (chasing one grand passion)."],
+    ["Field notes", "Jot what you notice: energy, mood, surprises. Patterns in the notes become your next hypothesis."],
+    ["Operationalize", "Tiny Lab's addition. When a pact earns its place, make it a practice with a routine and no end date. Practices and their outputs build a capability."]
+  ];
+
+  function viewSettings() {
+    let h = top("Settings") + "<main>";
+    h += `<section><h2>Reminder</h2><div class="group"><div class="check">Daily nudge<em>21:00 on iPhone</em></div></div><p class="foot">The iOS app uses a local notification, so no internet is needed. Not active in this web demo.</p></section>`;
+    h += `<section><h2>Cloud sync (optional)</h2><div class="group"><div class="check">iCloud sync<em>iOS app only</em></div></div><p class="foot">Off by default, so everything stays on the phone. When turned on, the app mirrors your data to your private iCloud.</p></section>`;
+    h += `<section><h2>Backup</h2><div class="group"><button class="action" data-act="export">Export backup (JSON)</button><button class="action" data-act="import">Import backup</button></div><p class="foot">Same idea as the app's export and import: a plain JSON file you keep in Files or iCloud Drive.</p></section>`;
+    h += `<section><h2>Field guide</h2><div class="group">${GUIDE.map(([t, d]) => `<div class="guide"><b>${t}</b><p>${d}</p></div>`).join("")}</div><p class="foot">Inspired by Tiny Experiments by Anne-Laure Le Cunff.</p></section>`;
+    h += `<section><h2>Demo</h2><div class="group"><button class="action danger" data-act="reset">Reset sample data</button></div></section>`;
+    return h + "</main>";
+  }
+
+  function render() {
+    const v = ui.stack[ui.stack.length - 1];
+    let body;
+    if (v?.type === "pact" && P(v.id)) body = viewPact(P(v.id));
+    else if (v?.type === "cap" && C(v.id)) body = viewCap(C(v.id));
+    else { ui.stack = []; body = { today: viewToday, lab: viewLab, caps: viewCaps, settings: viewSettings }[ui.tab](); }
+    $app.innerHTML = body + tabs();
+  }
+  const go = v => { ui.stack.push(v); render(); window.scrollTo(0, 0); };
+
+  // ---------- sheets ----------
+  const $ov = document.getElementById("overlay");
+  function sheet(titleText, inner, { form = "", save = "Save", saveDisabled = false } = {}) {
+    $ov.innerHTML = `<div class="scrim" data-act="scrim"><form class="sheet" ${form ? `data-form="${form}"` : ""} novalidate><div class="grab"></div><div class="sheet-head"><button type="button" data-act="close">Cancel</button><h3>${titleText}</h3>${form ? `<button type="submit" id="sheet-save" ${saveDisabled ? "disabled" : ""}>${save}</button>` : `<button type="button" data-act="close">Done</button>`}</div>${inner}</form></div>`;
+    $ov.hidden = false;
+    const first = $ov.querySelector("input:not([type=radio]):not([type=hidden]), textarea");
+    if (first && form) setTimeout(() => first.focus({ preventScroll: true }), 50);
+  }
+  const close = () => { $ov.hidden = true; $ov.innerHTML = ""; };
+  let toastTimer;
+  const toast = msg => { const t = document.getElementById("toast"); t.textContent = msg; t.hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(() => (t.hidden = true), 1800); };
+
+  function reasonSheet(p) {
+    sheet("What got in the way?", `<p class="foot" style="text-align:center;margin:0">Triple Check. No judgment, it's data.</p><div class="group">${Object.entries(REASONS).map(([k, [l, d]]) => `<button type="button" class="reason" data-act="reason" data-id="${p.id}" data-v="${k}"><span><b>${l}</b><span>${d}</span></span></button>`).join("")}</div><button type="button" class="btn block" data-act="close">Skip</button>`);
+  }
+
+  function logSheet(p, k) {
+    const l = p.logs[k] || { did: true, note: "" };
+    sheet(fmt(k, { weekday: "long", month: "short", day: "numeric" }), `
+      <div class="seg" role="radiogroup"><button type="button" class="${l.did ? "on" : ""}" data-act="logDid" data-v="1">Did it</button><button type="button" class="${!l.did ? "on" : ""}" data-act="logDid" data-v="0">Didn't</button></div>
+      <input type="hidden" name="did" value="${l.did ? 1 : 0}">
+      <div class="group">
+        ${p.metric ? `<div class="field"><label for="log-value">${esc(cap1(p.metric))}</label><input id="log-value" name="value" inputmode="decimal" value="${l.value ?? ""}" placeholder="${esc(p.metric)}"></div>` : ""}
+        <div class="field" id="reason-field" ${l.did ? "hidden" : ""}><label for="log-reason">Triple Check: what got in the way?</label><select id="log-reason" name="reason"><option value="">—</option>${Object.entries(REASONS).map(([r, [lb]]) => `<option value="${r}" ${l.reason === r ? "selected" : ""}>${lb}</option>`).join("")}</select></div>
+        <div class="field"><label for="log-note">Field note</label><textarea id="log-note" name="note" rows="3" placeholder="What did I notice? Energy, mood, surprises…">${esc(l.note)}</textarea></div>
+      </div><p class="foot">${esc(p.action)}</p>`, { form: `log:${p.id}:${k}` });
+  }
+
+  function pactChecks(f) {
+    const d = Number(f.duration.value) || 0;
+    const rows = [["Purposeful", f.question.value.trim() !== "", "Add a question"], ["Actionable", f.action.value.trim() !== "", "Name a concrete action"], ["Continuous", d >= 3, "Repeat it a few days at least"], ["Trackable", true, ""]];
+    return rows.map(([l, ok, hint]) => `<div class="check"><span class="${ok ? "ok" : "no"}">${ok ? "●" : "○"}</span>${l}${ok ? "" : `<em>${hint}</em>`}</div>`).join("");
+  }
+
+  function pactEditor(mode, p, capId) {
+    const src = p || {};
+    const q = mode === "pivot" && src.next ? src.next : (src.question || "");
+    const start = mode === "edit" ? src.start : today();
+    const cid = src.capId || capId || "";
+    const titleText = { new: "New pact", edit: "Edit pact", pivot: "Pivot" }[mode];
+    sheet(titleText, `
+      <section><h2>The pact</h2><div class="group">
+        <div class="field"><div class="inline"><span>I will</span><input id="pe-action" name="action" value="${esc(src.action || "")}" placeholder="write 200 words" autocomplete="off"></div></div>
+        <div class="stepper"><b>for <span id="pe-dur-lbl">${src.duration || 14}</span> days</b><button type="button" data-act="dur" data-v="-1" aria-label="Fewer days">−</button><button type="button" data-act="dur" data-v="1" aria-label="More days">+</button></div>
+        <div class="pad" style="padding-top:0"><div class="seg" id="pe-presets">${[7, 14, 21, 30].map(d => `<button type="button" class="${(src.duration || 14) === d ? "on" : ""}" data-act="preset" data-v="${d}">${d}d</button>`).join("")}</div></div>
+        <input type="hidden" name="duration" value="${src.duration || 14}">
+      </div><p class="foot">${mode === "pivot" ? "Pivot: keep what worked, change one thing." : "Small and repeatable beats big and vague."}</p></section>
+      <section><h2>Purposeful: the question</h2><div class="group"><div class="field"><label for="pe-q" hidden>Question</label><textarea id="pe-q" name="question" rows="2" placeholder="What am I curious to find out?">${esc(q)}</textarea></div></div></section>
+      <section><h2>Trackable: one number per day</h2><div class="group"><div class="field"><label for="pe-metric" hidden>Metric</label><input id="pe-metric" name="metric" value="${esc(src.metric || "")}" placeholder="minutes, pages, reps… (optional)" autocomplete="off"></div></div><p class="foot">Leave blank to just log did or didn't.</p></section>
+      <section><h2>Schedule and program</h2><div class="group"><div class="field"><label for="pe-start">Start</label><input id="pe-start" type="date" name="start" value="${start}"></div><div class="field"><label for="pe-cap">Builds toward</label><select id="pe-cap" name="capId"><option value="">None</option>${db.caps.map(c => `<option value="${c.id}" ${c.id === cid ? "selected" : ""}>${esc(c.name)}</option>`).join("")}</select></div></div></section>
+      <section><h2>PACT check</h2><div class="group" id="pe-checks"></div></section>`,
+      { form: `pact:${mode}:${p ? p.id : ""}`, saveDisabled: !src.action });
+    const f = $ov.querySelector("form");
+    f.querySelector("#pe-checks").innerHTML = pactChecks(f);
+  }
+
+  function outputEditor(p, o) {
+    const x = o || { title: "", kind: "insight", detail: "", link: "", op: false, opNote: "", date: today() };
+    sheet(o ? "Output" : "Log output", `
+      <div class="group">
+        <div class="field"><label for="oe-title">What came out of it?</label><input id="oe-title" name="title" value="${esc(x.title)}" autocomplete="off"></div>
+        <div class="field"><label for="oe-kind">Type</label><select id="oe-kind" name="kind">${Object.entries(KINDS).map(([k, l]) => `<option value="${k}" ${x.kind === k ? "selected" : ""}>${l}</option>`).join("")}</select></div>
+        <div class="field"><label for="oe-date">Date</label><input id="oe-date" type="date" name="date" value="${x.date}"></div>
+      </div>
+      <div class="group">
+        <div class="field"><label for="oe-detail">Notes</label><textarea id="oe-detail" name="detail" rows="3">${esc(x.detail)}</textarea></div>
+        <div class="field"><label for="oe-link">Link (optional)</label><input id="oe-link" name="link" value="${esc(x.link)}" inputmode="url" autocomplete="off"></div>
+      </div>
+      <div class="group">
+        <label class="check" for="oe-op" style="cursor:pointer"><input id="oe-op" type="checkbox" name="op" ${x.op ? "checked" : ""}> Operationalized: this output is in use</label>
+        <div class="field"><label for="oe-opnote">Where is it used now?</label><input id="oe-opnote" name="opNote" value="${esc(x.opNote)}" autocomplete="off"></div>
+      </div>
+      ${o ? `<button type="button" class="btn danger block" data-act="delOutput" data-id="${p.id}" data-o="${o.id}">Delete output</button>` : ""}`,
+      { form: `output:${p.id}:${o ? o.id : ""}`, saveDisabled: !x.title });
+  }
+
+  function opSheet(p) {
+    sheet("Operationalize", `
+      <section><h2>Routine: how it lives in my system</h2><div class="group"><div class="field"><label for="op-routine" hidden>Routine</label><textarea id="op-routine" name="routine" rows="2" placeholder="e.g. Weekdays 7:00, 20 min before email">${esc(p.routine)}</textarea></div></div><p class="foot">It's no longer a test. It runs on a schedule and you keep logging it.</p></section>
+      <section><h2>Capability it builds</h2><div class="group"><div class="field"><label for="op-cap">Capability</label><select id="op-cap" name="capId"><option value="">None</option>${db.caps.map(c => `<option value="${c.id}" ${c.id === p.capId ? "selected" : ""}>${esc(c.name)}</option>`).join("")}</select></div><div class="field"><label for="op-new">…or start a new capability</label><input id="op-new" name="newCap" autocomplete="off"></div></div></section>`,
+      { form: `op:${p.id}` });
+  }
+
+  function confirmSheet(titleText, msg, act, id, label) {
+    sheet(titleText, `<p style="margin:0;text-align:center;color:var(--muted)">${msg}</p><button type="button" class="btn primary block" data-act="${act}" data-id="${id || ""}" style="background:var(--miss);border-color:var(--miss);color:#fff">${label}</button>`);
+  }
+
+  // ---------- actions ----------
+  const A = {
+    tab: el => { ui.tab = el.dataset.v; ui.stack = []; render(); window.scrollTo(0, 0); },
+    back: () => { ui.stack.pop(); render(); },
+    open: el => go({ type: "pact", id: el.dataset.id }),
+    openCap: el => go({ type: "cap", id: el.dataset.id }),
+    labFilter: el => { ui.labFilter = el.dataset.v; render(); },
+    done: el => {
+      const p = P(el.dataset.id), l = p.logs[today()];
+      if (l?.did) clearLog(p, today()); else { setLog(p, today(), true); if (p.metric) { render(); return logSheet(p, today()); } }
+      render();
+    },
+    miss: el => {
+      const p = P(el.dataset.id), l = p.logs[today()];
+      if (l && !l.did) { clearLog(p, today()); render(); } else { setLog(p, today(), false); render(); reasonSheet(p); }
+    },
+    reason: el => { const p = P(el.dataset.id); if (p.logs[today()]) p.logs[today()].reason = el.dataset.v; save(); close(); render(); },
+    gridMode: el => { ui.gridMode = el.dataset.v; render(); },
+    cell: el => {
+      const p = P(el.dataset.id), k = el.dataset.k;
+      if (ui.gridMode === "note") return logSheet(p, k);
+      const l = p.logs[k];
+      if (!l) setLog(p, k, true); else if (l.did) setLog(p, k, false); else clearLog(p, k);
+      render();
+    },
+    logDid: el => {
+      const f = el.closest("form");
+      f.did.value = el.dataset.v;
+      f.querySelectorAll('[data-act="logDid"]').forEach(b => b.classList.toggle("on", b === el));
+      f.querySelector("#reason-field").hidden = el.dataset.v === "1";
+    },
+    newPact: el => pactEditor("new", null, el.dataset.cap),
+    pactMenu: el => {
+      const p = P(el.dataset.id);
+      sheet("Pact", `<div class="group"><button type="button" class="action" data-act="editPact" data-id="${p.id}">Edit pact</button>${p.status === "active" ? `<button type="button" class="action" data-act="pause" data-id="${p.id}">Pause</button>` : ""}${p.status === "paused" || p.status === "completed" ? `<button type="button" class="action" data-act="resume" data-id="${p.id}">Resume</button>` : ""}<button type="button" class="action danger" data-act="askDelete" data-id="${p.id}">Delete</button></div>`);
+    },
+    editPact: el => pactEditor("edit", P(el.dataset.id)),
+    pivot: el => pactEditor("pivot", P(el.dataset.id)),
+    dur: el => setDur(el.closest("form"), Math.max(1, Math.min(365, Number(el.closest("form").duration.value) + Number(el.dataset.v)))),
+    preset: el => setDur(el.closest("form"), Number(el.dataset.v)),
+    persistStep: el => { ui.persistDays = Math.max(1, Math.min(90, ui.persistDays + Number(el.dataset.v))); render(); },
+    persist: el => { const p = P(el.dataset.id); p.duration += ui.persistDays; p.decision = "persist"; p.status = "active"; save(); render(); toast(`Persisting: now ${p.duration} days`); },
+    pause: el => { const p = P(el.dataset.id); p.decision = "pause"; p.status = "paused"; save(); close(); render(); toast("Paused"); },
+    resume: el => { const p = P(el.dataset.id); p.status = "active"; if (!needsReview(p)) p.decision = "undecided"; save(); close(); render(); toast("Resumed"); },
+    askDelete: el => confirmSheet("Delete pact?", "This deletes the pact and all its logs.", "deletePact", el.dataset.id, "Delete pact"),
+    deletePact: el => { db.pacts = db.pacts.filter(p => p.id !== el.dataset.id); save(); close(); ui.stack.pop(); render(); toast("Deleted"); },
+    addOutput: el => outputEditor(P(el.dataset.id), null),
+    editOutput: el => { const p = P(el.dataset.id); outputEditor(p, p.outputs.find(o => o.id === el.dataset.o)); },
+    delOutput: el => { const p = P(el.dataset.id); p.outputs = p.outputs.filter(o => o.id !== el.dataset.o); save(); close(); render(); },
+    operationalize: el => opSheet(P(el.dataset.id)),
+    retire: el => { const p = P(el.dataset.id); p.status = "completed"; save(); render(); toast("Practice retired"); },
+    newCap: () => sheet("New capability", `<div class="group"><div class="field"><label for="nc-name">Capability</label><input id="nc-name" name="name" placeholder="e.g. Data storytelling" autocomplete="off"></div><div class="field"><label for="nc-why">Why it matters</label><textarea id="nc-why" name="why" rows="2"></textarea></div><div class="field"><label for="nc-target">What good looks like</label><textarea id="nc-target" name="target" rows="2"></textarea></div><div class="field"><label for="nc-level">Current level</label><select id="nc-level" name="level">${LEVELS.map(l => `<option value="${l}">${cap1(l)}</option>`).join("")}</select></div></div>`, { form: "cap", saveDisabled: true }),
+    level: el => { C(el.dataset.id).level = el.dataset.v; save(); render(); },
+    delCap: el => confirmSheet("Delete capability?", "Its pacts stay. They just won't be linked to it anymore.", "deleteCap", el.dataset.id, "Delete capability"),
+    deleteCap: el => { db.caps = db.caps.filter(c => c.id !== el.dataset.id); db.pacts.forEach(p => { if (p.capId === el.dataset.id) p.capId = null; }); save(); close(); ui.stack.pop(); render(); },
+    export: () => {
+      const json = JSON.stringify({ version: 1, exportedAt: new Date().toISOString(), capabilities: db.caps, pacts: db.pacts }, null, 2);
+      sheet("Export backup", `<pre class="json" id="export-json">${esc(json)}</pre><button type="button" class="btn primary block" data-act="copy">Copy JSON</button><p class="foot">On iPhone this saves a .json file to Files or iCloud Drive.</p>`);
+    },
+    copy: () => {
+      const text = document.getElementById("export-json").textContent;
+      const fallback = () => { const r = document.createRange(); r.selectNodeContents(document.getElementById("export-json")); const s = getSelection(); s.removeAllRanges(); s.addRange(r); toast("Selected. Copy it with your keyboard."); };
+      try { navigator.clipboard.writeText(text).then(() => toast("Copied"), fallback); } catch (e) { fallback(); }
+    },
+    import: () => sheet("Import backup", `<div class="group"><div class="field"><label for="imp-json">Paste an exported backup</label><textarea id="imp-json" name="json" rows="8" style="font:.75rem var(--font-mono)"></textarea></div></div><p class="foot">Merges into your data and skips anything already here.</p>`, { form: "import", save: "Import" }),
+    reset: () => confirmSheet("Reset sample data?", "This replaces everything in the demo with the original sample pacts.", "doReset", "", "Reset"),
+    doReset: () => { db = seed(); save(); close(); ui.stack = []; ui.tab = "today"; render(); toast("Sample data restored"); },
+    close: () => close(),
+    scrim: (el, e) => { if (e.target === el) close(); }
+  };
+
+  function setDur(f, d) {
+    f.duration.value = d;
+    f.querySelector("#pe-dur-lbl").textContent = d;
+    f.querySelectorAll('#pe-presets button').forEach(b => b.classList.toggle("on", Number(b.dataset.v) === d));
+    f.querySelector("#pe-checks").innerHTML = pactChecks(f);
+  }
+
+  // ---------- form submits ----------
+  const FORMS = {
+    log: (f, [id, k]) => {
+      const p = P(id), did = f.did.value === "1";
+      setLog(p, k, did);
+      const l = p.logs[k];
+      if (f.value) { const v = parseFloat(f.value.value); if (Number.isFinite(v)) l.value = v; else delete l.value; }
+      l.note = f.note.value.trim();
+      if (!did && f.reason.value) l.reason = f.reason.value; else delete l.reason;
+      save();
+    },
+    pact: (f, [mode, id]) => {
+      const vals = { action: f.action.value.trim(), question: f.question.value.trim(), duration: Number(f.duration.value) || 14, start: f.start.value || today(), metric: f.metric.value.trim(), capId: f.capId.value || null };
+      if (!vals.action) return false;
+      if (mode === "edit") { Object.assign(P(id), vals); toast("Saved"); return; }
+      const np = { id: uid(), ...vals, status: "active", decision: "undecided", plus: "", minus: "", next: "", routine: "", pivotFrom: null, logs: {}, outputs: [] };
+      if (mode === "pivot") { const old = P(id); old.decision = "pivot"; old.status = "completed"; np.pivotFrom = old.id; }
+      db.pacts.push(np);
+      ui.stack = [{ type: "pact", id: np.id }];
+      toast(mode === "pivot" ? "Pivoted to a new pact" : "Pact started");
+    },
+    output: (f, [id, oid]) => {
+      const p = P(id);
+      const vals = { title: f.title.value.trim(), kind: f.kind.value, date: f.date.value || today(), detail: f.detail.value.trim(), link: f.link.value.trim(), op: f.op.checked, opNote: f.opNote.value.trim() };
+      if (!vals.title) return false;
+      if (oid) Object.assign(p.outputs.find(o => o.id === oid), vals); else p.outputs.push({ id: uid(), ...vals });
+    },
+    op: (f, [id]) => {
+      const p = P(id);
+      let capId = f.capId.value || null;
+      const name = f.newCap.value.trim();
+      if (name) { const c = { id: uid(), name, why: "", target: "", level: "exploring" }; db.caps.push(c); capId = c.id; }
+      p.routine = f.routine.value.trim(); p.capId = capId; p.opAt = today();
+      if (p.decision === "undecided") p.decision = "persist";
+      p.status = "operationalized";
+      toast("Now a practice");
+    },
+    cap: f => {
+      const name = f.name.value.trim();
+      if (!name) return false;
+      db.caps.push({ id: uid(), name, why: f.why.value.trim(), target: f.target.value.trim(), level: f.level.value });
+    },
+    import: f => {
+      let data;
+      try { data = JSON.parse(f.json.value); } catch (e) { toast("That isn't valid JSON. Paste the whole export."); return false; }
+      const caps = Array.isArray(data.capabilities) ? data.capabilities : [], pacts = Array.isArray(data.pacts) ? data.pacts : [];
+      const hasC = new Set(db.caps.map(c => c.id)), hasP = new Set(db.pacts.map(p => p.id));
+      const nc = caps.filter(c => c && c.id && !hasC.has(c.id)), np = pacts.filter(p => p && p.id && p.logs && !hasP.has(p.id));
+      db.caps.push(...nc); db.pacts.push(...np.map(p => ({ outputs: [], ...p })));
+      toast(`Imported ${np.length} pacts and ${nc.length} capabilities`);
+    }
+  };
+
+  document.addEventListener("click", e => {
+    const el = e.target.closest("[data-act]");
+    if (!el || el.disabled) return;
+    const fn = A[el.dataset.act];
+    if (fn) { if (el.dataset.act !== "scrim") e.preventDefault(); fn(el, e); }
+  });
+  document.addEventListener("submit", e => {
+    e.preventDefault();
+    const f = e.target, [name, ...args] = (f.dataset.form || "").split(":");
+    if (!FORMS[name]) return;
+    if (FORMS[name](f, args) === false) return;
+    save(); close(); render();
+  });
+  document.addEventListener("input", e => {
+    const t = e.target;
+    if (t.dataset.bind) { P(t.dataset.id)[t.dataset.bind] = t.value; save(); return; }
+    if (t.dataset.cbind) { C(t.dataset.id)[t.dataset.cbind] = t.value; save(); return; }
+    const f = t.closest("form[data-form]");
+    if (!f) return;
+    const kind = f.dataset.form.split(":")[0];
+    const btn = document.getElementById("sheet-save");
+    if (kind === "pact") { f.querySelector("#pe-checks").innerHTML = pactChecks(f); btn.disabled = !f.action.value.trim(); }
+    if (kind === "output") btn.disabled = !f.title.value.trim();
+    if (kind === "cap") btn.disabled = !f.name.value.trim();
+  });
+  document.addEventListener("keydown", e => { if (e.key === "Escape" && !$ov.hidden) close(); });
+  // Re-render cap name in lists after editing it inline.
+  document.addEventListener("change", e => { if (e.target.dataset.cbind === "name") save(); });
+
+  render();
+})();
+</script>
