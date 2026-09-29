@@ -187,7 +187,11 @@ struct PactDetailView: View {
             }
             .onDelete { offsets in
                 let items = pact.sortedOutputs
-                for i in offsets { context.delete(items[i]) }
+                for i in offsets {
+                    let doomed = items[i]
+                    pact.outputs?.removeAll { $0.persistentModelID == doomed.persistentModelID }
+                    context.delete(doomed)
+                }
             }
             Button("Log output", systemImage: "plus.circle") { addingOutput = true }
         } header: {

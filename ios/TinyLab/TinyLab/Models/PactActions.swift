@@ -18,9 +18,10 @@ extension Pact {
     }
 
     func clearLog(on date: Date, in context: ModelContext) {
-        if let existing = checkIn(on: date) {
-            context.delete(existing)
-        }
+        guard let existing = checkIn(on: date) else { return }
+        // Drop it from the array right away; SwiftData only prunes on save.
+        checkIns?.removeAll { $0.persistentModelID == existing.persistentModelID }
+        context.delete(existing)
     }
 
     /// Grid tap: nothing -> done -> missed -> nothing.
