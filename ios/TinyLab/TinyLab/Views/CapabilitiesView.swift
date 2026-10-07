@@ -127,7 +127,7 @@ struct CapabilityDetailView: View {
                             Label(output.title, systemImage: output.kind.symbol)
                             Spacer()
                             if output.isOperationalized {
-                                Image(systemName: "gearshape.2.fill").foregroundStyle(.tint)
+                                Image("tl-in-use").resizable().frame(width: 16, height: 16).foregroundStyle(.tint)
                             }
                         }
                     }

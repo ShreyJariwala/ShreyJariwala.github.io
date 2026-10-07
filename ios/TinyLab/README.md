@@ -42,7 +42,7 @@ stays local.
 | **PACT**: Purposeful, Actionable, Continuous, Trackable | Curiosity *question* field (Purposeful), a concrete action, a set number of days, a daily did/didn't log plus an optional number. The editor shows a live PACT check. |
 | Success = running the pact, not the outcome | The main number is the hit rate (days done ÷ days due). There are no targets. |
 | **Growth loops** (act → reflect → adjust) | Log daily → review → persist / pause / pivot → next pact. |
-| **Triple Check** (Head / Heart / Hand) | When you tap ✕, it asks *what got in the way?* The detail screen totals the reasons and suggests a fix. |
+| **Triple Check** (Head / Heart / Hand) | When you tap the cross, it asks *what got in the way?* The detail screen totals the reasons and suggests a fix. |
 | **Field notes** | A note (and value) on any day. Long-press a day in the grid, or the row on Today. |
 | **Plus / Minus / Next** | Three-line review on every pact. *Next* pre-fills the question when you pivot. |
 | **Persist / Pause / Pivot** | Decision buttons. Persist adds days, Pause stops the pact, Pivot closes it and opens a pre-filled new pact linked to the old one. |
@@ -70,7 +70,7 @@ experiment (pact) ──review──▶ persist / pause / pivot
 
 ## Screens
 
-- **Today**: every running experiment and practice, each with ✓ and ✕
+- **Today**: every running experiment and practice, each with check and cross
   buttons. Tap again to undo. A progress bar shows how many you've logged
   today. Pacts that have ended show up at the top, waiting for a decision.
 - **Lab**: every pact, with filters, plus totals (reps, hit rate, outputs).
@@ -91,6 +91,8 @@ TinyLab/
   Services/Backup.swift   JSON export/import
   Services/Reminder.swift daily local notification
   Views/                  one file per screen
+design/                   custom icon set + motion plan (see design/README.md)
+demo/                     clickable web demo of the app
 ```
 
 The project uses Xcode 16's synchronized folders, so any `.swift` file you add

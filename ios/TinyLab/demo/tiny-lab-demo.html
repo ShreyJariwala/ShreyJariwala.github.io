@@ -121,9 +121,13 @@ section h2 { font: 500 .72rem var(--font-mono); letter-spacing: .08em; text-tran
 .log.on { color: var(--on-state); }
 .log.on::before { clip-path: inset(0 0 0 0); }
 .log.just::before { animation: rise .42s var(--ease-out) both; }
-.log.just.done svg path { stroke-dasharray: 24; animation: draw .34s .12s var(--ease-out) both; }
+.log .ic { width: 20px; height: 20px; stroke-width: 2.4; }
+.ic.draw path { stroke-dasharray: 1; stroke-dashoffset: 0; }
+.log.just .ic.draw path { animation: draw .32s .12s var(--ease-out) both; }
+.log.just .ic.draw path + path { animation-delay: .2s; }
 @keyframes rise { from { clip-path: inset(100% 0 0 0 round 0); } to { clip-path: inset(0 0 0 0); } }
-@keyframes draw { from { stroke-dashoffset: 24; } to { stroke-dashoffset: 0; } }
+@keyframes draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+@keyframes grow-in { from { transform: scale(0); } }
 
 .link-row { display: flex; align-items: center; gap: 10px; width: 100%; border: 0; background: none; text-align: left; padding: 12px 14px; transition: background .15s; }
 .link-row:hover, .action:hover, .reason:hover { background: color-mix(in oklch, var(--action-soft) 45%, transparent); }
@@ -131,7 +135,7 @@ section h2 { font: 500 .72rem var(--font-mono); letter-spacing: .08em; text-tran
 .chev { color: var(--ink-2); flex: none; }
 
 /* Status pills: colour + word, never colour alone */
-.pill { font: 600 .7rem var(--font-body); padding: 2px 8px; border-radius: 99px; background: var(--action-soft); color: var(--action); white-space: nowrap; }
+.pill { display: inline-flex; align-items: center; gap: 4px; font: 600 .7rem var(--font-body); padding: 2px 8px; border-radius: 99px; background: var(--action-soft); color: var(--action); white-space: nowrap; }
 .pill.s-operationalized { background: var(--done-soft); color: var(--done); }
 .pill.s-completed { background: var(--well); color: var(--ink-2); }
 .pill.s-paused, .pill.warn { background: var(--warn-soft); color: var(--warn); }
@@ -144,7 +148,9 @@ section h2 { font: 500 .72rem var(--font-mono); letter-spacing: .08em; text-tran
 .hero { padding: 14px; display: grid; gap: 8px; }
 .hero > * + * { border-top: 0; }
 .hero h3 { font: 700 1.3rem/1.2 var(--font-display); margin: 0; text-wrap: balance; }
-.hero .q { color: var(--ink-2); font-style: italic; }
+.hero .q { color: var(--ink-2); font-style: italic; display: flex; gap: 8px; align-items: flex-start; }
+.hero .q .ic { margin-top: 2px; color: var(--action); }
+.meta { display: flex; align-items: center; gap: 6px; }
 .meta { font: 500 .75rem var(--font-mono); color: var(--ink-2); }
 
 /* Day grid */
@@ -214,12 +220,14 @@ section h2 { font: 500 .72rem var(--font-mono); letter-spacing: .08em; text-tran
 .reason b { display: block; }
 .reason span { color: var(--ink-2); font-size: .82rem; }
 .check { display: flex; gap: 8px; align-items: center; padding: 8px 14px; font-size: .88rem; }
-.check .ok { color: var(--done); }
-.check .no { color: var(--ink-2); }
+.check .ic { color: var(--ink-2); }
+.check .ic.ok { color: var(--done); }
+.check .ic.tick path { stroke-dasharray: 1; animation: draw .32s .05s var(--ease-out) both; }
+.check .ic.tick circle { transform-box: fill-box; transform-origin: center; animation: settle .26s var(--ease-out); }
 .check em { margin-left: auto; font-style: normal; font-size: .75rem; color: var(--ink-2); }
 .stepper { display: flex; align-items: center; gap: 10px; padding: 10px 14px; }
 .stepper b { flex: 1; font-weight: 500; }
-.stepper button { width: 34px; height: 30px; border: 1px solid var(--line); background: var(--surface); border-radius: 8px; transition: transform .12s var(--ease-out); }
+.stepper button { display: grid; place-items: center; width: 34px; height: 30px; border: 1px solid var(--line); background: var(--surface); border-radius: 8px; transition: transform .12s var(--ease-out); }
 .stepper button:active { transform: scale(.92); }
 .inline { display: flex; align-items: baseline; gap: 6px; }
 .inline span { color: var(--ink-2); white-space: nowrap; }
@@ -229,6 +237,31 @@ pre.json { margin: 0; max-height: 240px; overflow: auto; font: .72rem/1.4 var(--
 .guide { padding: 12px 14px; display: grid; gap: 4px; }
 .guide b { font: 700 1rem var(--font-display); }
 .guide p { margin: 0; color: var(--ink-2); font-size: .88rem; max-width: 60ch; }
+
+/* Icons: Tiny Lab set (design/build_icons.py). 24 grid, 1.75 stroke, round caps. */
+.sprite { position: absolute; width: 0; height: 0; overflow: hidden; }
+.ic { width: 20px; height: 20px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; }
+.ic.sm { width: 16px; height: 16px; }
+.ic.xs { width: 13px; height: 13px; vertical-align: -2px; stroke-width: 2; }
+.ic.lg { width: 24px; height: 24px; }
+.ic.xl { width: 48px; height: 48px; stroke-width: 1.5; color: var(--action); }
+.ic.kind { color: var(--action); }
+.streak .last { fill: currentColor; }
+.streak.grew .last { transform-box: fill-box; transform-origin: center; animation: grow-in .36s .3s var(--ease-out) both; }
+.action .ic, .reason .ic { color: inherit; }
+.action.danger .ic { color: var(--miss); }
+.reason .tag .ic { width: 20px; height: 20px; }
+.guide b { display: flex; align-items: center; gap: 8px; }
+.guide b .ic { color: var(--action); }
+.growth { display: block; width: 100%; height: auto; max-width: 100%; }
+.growth .track { stroke: var(--line); stroke-width: 2; fill: none; }
+.growth .arrow { stroke: var(--ink-2); stroke-width: 1.75; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+.growth .node { fill: var(--surface); stroke: var(--action); stroke-width: 1.75; }
+.growth .node.end { fill: var(--action); }
+.growth .glyph { color: var(--action); }
+.growth .glyph.end { color: var(--on-action); }
+.growth text { fill: var(--ink); font: 600 12px var(--font-body); }
+.growth text.n { fill: var(--ink-2); font: 500 11px var(--font-mono); }
 
 /* Screen-to-screen continuity (View Transitions; static fallback where unsupported) */
 ::view-transition-old(root) { animation: vt-fade-out .16s ease-in both; }
@@ -249,6 +282,7 @@ html[data-nav="back"]::view-transition-new(root) { animation: vt-in-left .32s va
   .sheet, .scrim.closing .sheet { animation: fade .2s ease-out; }
   .scrim.closing .sheet { animation: fade .15s ease-in reverse forwards; }
   .cell.just, .toast { animation: fade .2s ease-out; }
+  .streak.grew .last, .check .ic.tick circle { animation: none; }
   .log:active, .cell:active, .btn:active, .icon-btn:active { transform: none; }
   .flask .fill, .flask .surface, .bar > i { transition-duration: .2s; }
   html[data-nav]::view-transition-old(root), html[data-nav]::view-transition-new(root) { animation-name: vt-fade-out; }
@@ -259,6 +293,7 @@ html[data-nav="back"]::view-transition-new(root) { animation: vt-in-left .32s va
 <div class="app" id="app"></div>
 <div id="overlay" hidden></div>
 <div id="toast" class="toast" hidden></div>
+<svg class="sprite" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><symbol id="i-today" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="4.5"/><path d="M8.6 12.3l2.4 2.4 4.6-5"/></symbol><symbol id="i-lab" viewBox="0 0 24 24"><path d="M9.5 3.5h5M10.5 3.5v5.2L5.3 18.2a1.6 1.6 0 0 0 1.4 2.3h10.6a1.6 1.6 0 0 0 1.4-2.3L13.5 8.7V3.5"/><path d="M7.7 14.5h8.6"/></symbol><symbol id="i-capability" viewBox="0 0 24 24"><path d="M3.5 20h5v-4.5h5V11h5V6.5h2"/><path d="M18.5 6.5V3l3 1.25-3 1.25"/></symbol><symbol id="i-settings" viewBox="0 0 24 24"><path d="M4 7h8.5M17.5 7H20M4 17h2.5M11.5 17H20"/><circle cx="15" cy="7" r="2.5"/><circle cx="9" cy="17" r="2.5"/></symbol><symbol id="i-back" viewBox="0 0 24 24"><path d="M14.5 5.5L8 12l6.5 6.5"/></symbol><symbol id="i-chevron" viewBox="0 0 24 24"><path d="M9.5 5.5L16 12l-6.5 6.5"/></symbol><symbol id="i-more" viewBox="0 0 24 24"><circle cx="6" cy="12" r="1.5" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none"/><circle cx="18" cy="12" r="1.5" fill="currentColor" stroke="none"/></symbol><symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></symbol><symbol id="i-close" viewBox="0 0 24 24"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/></symbol><symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol><symbol id="i-minus" viewBox="0 0 24 24"><path d="M5 12h14"/></symbol><symbol id="i-edit" viewBox="0 0 24 24"><path d="M4.5 19.5l1-4.5L15.6 4.9a2 2 0 0 1 2.8 0l.7.7a2 2 0 0 1 0 2.8L9 18.5z"/><path d="M13.5 7l3.5 3.5"/></symbol><symbol id="i-trash" viewBox="0 0 24 24"><path d="M4.5 7h15M9.5 7V4.5h5V7M6.5 7l.8 12.6a1.5 1.5 0 0 0 1.5 1.4h6.4a1.5 1.5 0 0 0 1.5-1.4L17.5 7"/></symbol><symbol id="i-note" viewBox="0 0 24 24"><path d="M5.5 3.5h9l4 4v13h-13z"/><path d="M14.5 3.5v4h4M8.5 12.5h7M8.5 16h4.5"/></symbol><symbol id="i-copy" viewBox="0 0 24 24"><rect x="8.5" y="8.5" width="11" height="11" rx="2.5"/><path d="M15.5 8.5V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v7.5a2 2 0 0 0 2 2h2.5"/></symbol><symbol id="i-reset" viewBox="0 0 24 24"><path d="M5 12a7 7 0 1 0 2.05-4.95"/><path d="M5 4.5V8h3.5"/></symbol><symbol id="i-streak" viewBox="0 0 24 24"><rect x="2.5" y="9" width="5.2" height="6" rx="1.6"/><rect x="9.4" y="9" width="5.2" height="6" rx="1.6"/><rect x="16.3" y="9" width="5.2" height="6" rx="1.6" fill="currentColor"/></symbol><symbol id="i-persist" viewBox="0 0 24 24"><path d="M19 12a7 7 0 1 1-2.05-4.95"/><path d="M19 4.5V8h-3.5"/></symbol><symbol id="i-pause" viewBox="0 0 24 24"><rect x="6.5" y="5" width="3.5" height="14" rx="1.2"/><rect x="14" y="5" width="3.5" height="14" rx="1.2"/></symbol><symbol id="i-pivot" viewBox="0 0 24 24"><path d="M7 21V4"/><path d="M7 14a5 5 0 0 1 5-5h6.5"/><path d="M15.5 6l3 3-3 3"/></symbol><symbol id="i-practice" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15.5" rx="3"/><path d="M3.5 9.5h17M8 3v4M16 3v4M9 15l2 2 4-4"/></symbol><symbol id="i-in-use" viewBox="0 0 24 24"><path d="M9 3v4.5M15 3v4.5M6.5 7.5h11v3.5a5.5 5.5 0 0 1-11 0z"/><path d="M12 16.5V21"/></symbol><symbol id="i-question" viewBox="0 0 24 24"><path d="M5 18.5V7a3 3 0 0 1 3-3h8a3 3 0 0 1 3 3v6a3 3 0 0 1-3 3H8z"/><path d="M10.2 8.6a1.9 1.9 0 1 1 2.6 1.8c-.5.2-.8.6-.8 1.1v.2"/><circle cx="12" cy="13.9" r=".9" fill="currentColor" stroke="none"/></symbol><symbol id="i-check-ok" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M8.2 12.3l2.6 2.6 5.1-5.3"/></symbol><symbol id="i-check-todo" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5" stroke-dasharray="2.6 2.4"/></symbol><symbol id="i-head" viewBox="0 0 24 24"><path d="M14.5 20.5v-3h2a2 2 0 0 0 2-2v-2.3l1.7-.6-1.9-3.6A7 7 0 1 0 8 15.3v5.2"/><path d="M11 9.5a2 2 0 1 1 2.5 1.9"/></symbol><symbol id="i-heart" viewBox="0 0 24 24"><path d="M12 19.5s-7.5-4.4-7.5-9.8A4.2 4.2 0 0 1 12 7.2a4.2 4.2 0 0 1 7.5 2.5c0 5.4-7.5 9.8-7.5 9.8z"/></symbol><symbol id="i-hand" viewBox="0 0 24 24"><path d="M7.5 12.5V7a1.5 1.5 0 0 1 3 0v4.5M10.5 11V5a1.5 1.5 0 0 1 3 0v6M13.5 11V6a1.5 1.5 0 0 1 3 0v6M16.5 12V9a1.5 1.5 0 0 1 3 0v5a7 7 0 0 1-7 7h-.6a6 6 0 0 1-4.8-2.4L4.3 15.4a1.5 1.5 0 0 1 2.3-1.9l.9 1"/></symbol><symbol id="i-life" viewBox="0 0 24 24"><path d="M7.5 15.5a4 4 0 0 1-.6-7.96A5.5 5.5 0 0 1 17.4 8a3.75 3.75 0 0 1 .1 7.5z"/><path d="M9 18.5l-1 2M13 18.5l-1 2M17 18.5l-1 2"/></symbol><symbol id="i-insight" viewBox="0 0 24 24"><path d="M9.5 18h5M10.5 21h3"/><path d="M12 3a6 6 0 0 0-3.6 10.8c.7.5 1.1 1.3 1.1 2.1v.6h5v-.6c0-.8.4-1.6 1.1-2.1A6 6 0 0 0 12 3z"/></symbol><symbol id="i-artifact" viewBox="0 0 24 24"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9z"/><path d="M4 7.5l8 4.5 8-4.5M12 12v9"/></symbol><symbol id="i-data" viewBox="0 0 24 24"><path d="M3.5 20.5h17M6.5 17v-5M11 17V7M15.5 17v-7M20 17V4.5"/></symbol><symbol id="i-link" viewBox="0 0 24 24"><path d="M10 14a4 4 0 0 0 5.66 0l3-3a4 4 0 0 0-5.66-5.66l-1 1"/><path d="M14 10a4 4 0 0 0-5.66 0l-3 3a4 4 0 0 0 5.66 5.66l1-1"/></symbol><symbol id="i-bell" viewBox="0 0 24 24"><path d="M6 16v-5a6 6 0 1 1 12 0v5l1.5 2h-15z"/><path d="M10 20.5a2 2 0 0 0 4 0"/></symbol><symbol id="i-cloud" viewBox="0 0 24 24"><path d="M7 18a4.5 4.5 0 0 1-.6-8.96A6 6 0 0 1 17.6 9a4.5 4.5 0 0 1-.6 9z"/></symbol><symbol id="i-export" viewBox="0 0 24 24"><path d="M12 14.5V3.5M8 7.5l4-4 4 4"/><path d="M5 12.5v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6"/></symbol><symbol id="i-import" viewBox="0 0 24 24"><path d="M12 3.5v11M8 10.5l4 4 4-4"/><path d="M5 12.5v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6"/></symbol><symbol id="i-guide" viewBox="0 0 24 24"><path d="M4.5 5.5a2 2 0 0 1 2-2h13v14h-13a2 2 0 0 0-2 2z"/><path d="M4.5 19.5a2 2 0 0 0 2 2h13v-4"/></symbol></svg>
 
 <script>
 (() => {
@@ -341,25 +376,31 @@ html[data-nav="back"]::view-transition-new(root) { animation: vt-in-left .32s va
   function setLog(p, k, did) { p.logs[k] = { ...(p.logs[k] || { note: "" }), did }; if (did) delete p.logs[k].reason; save(); }
   function clearLog(p, k) { delete p.logs[k]; save(); }
 
-  // ---------- icons ----------
+  // ---------- icons (Tiny Lab set, see design/build_icons.py) ----------
+  const ic = (n, c = "") => `<svg class="ic ${c}" aria-hidden="true"><use href="#i-${n}"/></svg>`;
   const I = {
-    check: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg>',
-    x: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>',
-    plus: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>',
-    chev: '<svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg>',
-    back: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>',
-    today: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.8 2.8L16.5 9.5"/></svg>',
-    flask: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6M10 3v6L4.5 19a1.5 1.5 0 0 0 1.3 2h12.4a1.5 1.5 0 0 0 1.3-2L14 9V3"/><path d="M7 15h10"/></svg>',
-    stack: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 3l9 5-9 5-9-5 9-5z"/><path d="M3 13l9 5 9-5"/></svg>',
-    gear: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M2 12h3M19 12h3M4.9 19.1L7 17M17 7l2.1-2.1"/></svg>',
-    cog2: '⚙︎'
+    // Inline (not <use>) so their strokes can draw on when you log.
+    check: '<svg class="ic draw" viewBox="0 0 24 24" aria-hidden="true"><path pathLength="1" d="M5 12.5l4.5 4.5L19 7.5"/></svg>',
+    x: '<svg class="ic draw" viewBox="0 0 24 24" aria-hidden="true"><path pathLength="1" d="M6.5 6.5l11 11"/><path pathLength="1" d="M17.5 6.5l-11 11"/></svg>',
+    streak: grew => `<svg class="ic xs streak ${grew ? "grew" : ""}" viewBox="0 0 24 24" aria-hidden="true"><rect x="2.5" y="9" width="5.2" height="6" rx="1.6"/><rect x="9.4" y="9" width="5.2" height="6" rx="1.6"/><rect class="last" x="16.3" y="9" width="5.2" height="6" rx="1.6"/></svg>`,
+    plus: ic("plus"), chev: ic("chevron", "sm chev"), back: ic("back"), more: ic("more"), trash: ic("trash")
   };
+  const GUIDE_ICONS = { "Pact": "lab", "PACT": "check-ok", "Growth loops": "persist", "Triple Check": "head", "Plus / Minus / Next": "note", "Persist / Pause / Pivot": "pivot", "Cognitive scripts": "question", "Field notes": "note", "Operationalize": "practice" };
+
+  // Experiment -> practice -> capability, drawn with live counts.
+  function growthPath(nEx, nPr, nCap) {
+    const nodes = [[40, "lab", "Experiments", nEx], [160, "practice", "Practices", nPr], [280, "capability", "Capabilities", nCap]];
+    return `<svg class="growth" viewBox="0 0 320 96" role="img" aria-label="${nEx} experiments become ${nPr} practices that build ${nCap} capabilities">
+      <path class="track" d="M62 30H138M182 30H258"/><path class="arrow" d="M96 25l5 5-5 5M216 25l5 5-5 5"/>
+      ${nodes.map(([x, icon, label, n], i) => `<circle class="node ${i === 2 ? "end" : ""}" cx="${x}" cy="30" r="21"/><svg class="glyph ${i === 2 ? "end" : ""}" x="${x - 11}" y="19" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#i-${icon}"/></svg><text x="${x}" y="72" text-anchor="middle">${label}</text><text class="n" x="${x}" y="88" text-anchor="middle">${n}</text>`).join("")}
+    </svg>`;
+  }
 
   // ---------- views ----------
   const $app = document.getElementById("app");
   const top = (h, right = "", sub = "") => `<header class="top">${ui.stack.length ? `<button class="back" data-act="back">${I.back}Back</button><h1></h1>` : `<h1>${sub ? `<span class="date">${sub}</span>` : ""}${esc(h)}</h1>`}${right}</header>`;
   const plusBtn = act => `<button class="icon-btn" data-act="${act}" aria-label="New">${I.plus}</button>`;
-  const tabs = () => `<nav class="tabs">${[["today", "Today", I.today], ["lab", "Lab", I.flask], ["caps", "Capabilities", I.stack], ["settings", "Settings", I.gear]].map(([k, l, i]) => `<button class="${ui.tab === k ? "on" : ""}" data-act="tab" data-v="${k}">${i}${l}</button>`).join("")}</nav>`;
+  const tabs = () => `<nav class="tabs">${[["today", "Today", ic("today", "lg")], ["lab", "Lab", ic("lab", "lg")], ["caps", "Capabilities", ic("capability", "lg")], ["settings", "Settings", ic("settings", "lg")]].map(([k, l, i]) => `<button class="${ui.tab === k ? "on" : ""}" data-act="tab" data-v="${k}">${i}${l}</button>`).join("")}</nav>`;
   const levelBar = lv => `<div class="levels" aria-label="Level ${cap1(lv)}">${LEVELS.map((l, i) => `<i class="${i <= LEVELS.indexOf(lv) ? "on" : ""}"></i>`).join("")}</div>`;
   const summaryRow = p => {
     const n = p.outputs.length;
@@ -368,7 +409,8 @@ html[data-nav="back"]::view-transition-new(root) { animation: vt-in-left .32s va
 
   function todayRow(p) {
     const l = p.logs[today()];
-    const s = streak(p), fire = s > 0 ? ` · 🔥${s}` : "";
+    const j0 = ui.just && ui.just.id === p.id && !ui.just.k ? ui.just.kind : "";
+    const s = streak(p), fire = s > 0 ? ` · ${I.streak(j0 === "done")}${s}` : "";
     const sub = p.status === "operationalized" ? `Practice${p.capId && C(p.capId) ? " · " + esc(C(p.capId).name) : ""}${fire}` : `Day ${Math.min(dayNum(p), p.duration)}/${p.duration}${fire} · ${pct(rate(p))}`;
     const j = ui.just && ui.just.id === p.id && !ui.just.k ? ui.just.kind : "";
     return `<div class="row ${l ? (l.did ? "logged-done" : "logged-miss") : ""}"><button class="row-main" data-act="open" data-id="${p.id}"><span class="row-title">${esc(p.action)}</span><span class="row-sub">${sub}</span></button>
@@ -390,13 +432,13 @@ html[data-nav="back"]::view-transition-new(root) { animation: vt-in-left .32s va
     const flaskPath = "M11 3h8v11l9 17.5a2 2 0 0 1-1.8 2.5H3.8A2 2 0 0 1 2 31.5L11 14z";
     const meter = loggable.length ? `<div class="meter" role="img" aria-label="${logged} of ${loggable.length} logged today"><svg class="flask ${lvl === 1 ? "full" : ""}" id="flask" viewBox="0 0 30 36" aria-hidden="true" style="--lvl-y:${ui.meterFrom}px"><defs><clipPath id="flask-in"><path d="${flaskPath}"/></clipPath></defs><g clip-path="url(#flask-in)"><rect class="fill" x="0" y="0" width="30" height="40"/><path class="surface" d="M0 .6Q7.5-1.4 15 .6T30 .6"/></g><path class="glass" d="${flaskPath}"/><path class="glass" d="M8.5 3h13"/></svg><span><b>${logged}</b>/${loggable.length}</span></div>` : "";
     let h = top("Today", meter + plusBtn("newPact"), dateLbl) + "<main>";
-    h += `<p class="demo-note">Web demo of the Tiny Lab iOS app with sample pacts. Tap ✓ or ✕ to log today. Changes stay in this browser; reset them in Settings.</p>`;
+    h += `<p class="demo-note">Web demo of the Tiny Lab iOS app with sample pacts. Tap the check or the cross on a row to log today. Changes stay in this browser; reset them in Settings.</p>`;
     if (loggable.length) h += `<div class="group"><div class="progress"><span><b>${logged} of ${loggable.length}</b> logged today</span><div class="bar"><i id="pbar" style="--p:${ui.pFrom}"></i></div></div></div>`;
     if (review.length) h += `<section><h2>Pact finished · persist, pause or pivot?</h2><div class="group">${review.map(summaryRow).join("")}</div></section>`;
     if (running.length) h += `<section><h2>Experiments</h2><div class="group">${running.map(todayRow).join("")}</div></section>`;
     if (practices.length) h += `<section><h2>Practices</h2><div class="group">${practices.map(todayRow).join("")}</div><p class="foot">Operationalized pacts. No end date, still logged daily.</p></section>`;
     if (upcoming.length) h += `<section><h2>Upcoming</h2><div class="group">${upcoming.map(p => `<button class="link-row" data-act="open" data-id="${p.id}"><span class="grow"><span class="row-title">${esc(p.action)}</span><span class="row-sub">Starts ${fmt(p.start)}</span></span>${I.chev}</button>`).join("")}</div></section>`;
-    if (!loggable.length && !review.length && !upcoming.length) h += `<div class="group empty"><h3>No experiments running</h3><p>Make a pact: I will [action] for [duration].</p><button class="btn primary" data-act="newPact">New pact</button></div>`;
+    if (!loggable.length && !review.length && !upcoming.length) h += `<div class="group empty">${ic("lab", "xl")}<h3>No experiments running</h3><p>Make a pact: I will [action] for [duration].</p><button class="btn primary" data-act="newPact">New pact</button></div>`;
     return h + "</main>";
   }
 
@@ -410,58 +452,60 @@ html[data-nav="back"]::view-transition-new(root) { animation: vt-in-left .32s va
     let h = top("Lab", plusBtn("newPact")) + "<main>";
     h += `<div class="group"><div class="stats"><div class="stat"><b>${db.pacts.length}</b><span>pacts</span></div><div class="stat"><b>${reps}</b><span>reps</span></div><div class="stat"><b>${pct(due ? Math.min(reps / due, 1) : 0)}</b><span>hit rate</span></div><div class="stat"><b>${outs}</b><span>outputs</span></div></div></div>`;
     h += `<div class="chips">${[["all", "All"], ["active", "Running"], ["operationalized", "Practices"], ["completed", "Done"], ["paused", "Paused"]].map(([k, l]) => `<button class="chip ${f === k ? "on" : ""}" data-act="labFilter" data-v="${k}">${l}</button>`).join("")}</div>`;
-    h += list.length ? `<div class="group">${list.map(summaryRow).join("")}</div>` : `<div class="group empty"><p>Nothing here yet.</p></div>`;
+    h += list.length ? `<div class="group">${list.map(summaryRow).join("")}</div>` : `<div class="group empty">${ic("lab", "xl")}<p>Nothing here yet.</p></div>`;
     return h + "</main>";
   }
 
   function viewPact(p) {
     const cap = p.capId && C(p.capId);
-    const dateLine = p.status === "operationalized" ? `Started ${fmt(p.start)} · practice since ${fmt(p.opAt || today())}` : `${fmt(p.start)} → ${fmt(endKey(p))}`;
-    let h = top("", `<button class="icon-btn" data-act="pactMenu" data-id="${p.id}" aria-label="More">···</button>`) + "<main>";
-    h += `<div class="group hero"><div><span class="pill s-${p.status}">${STATUS[p.status]}</span></div><h3>${esc(title(p))}</h3>${p.question ? `<div class="q">${esc(p.question)}</div>` : ""}<div class="meta">${dateLine}</div>${cap ? `<div class="meta">Builds: ${esc(cap.name)}</div>` : ""}${p.status === "operationalized" && p.routine ? `<div class="meta">↻ ${esc(p.routine)}</div>` : ""}</div>`;
+    const dateLine = p.status === "operationalized" ? `Started ${fmt(p.start)} · practice since ${fmt(p.opAt || today())}` : `${fmt(p.start)} – ${fmt(endKey(p))}`;
+    let h = top("", `<button class="icon-btn" data-act="pactMenu" data-id="${p.id}" aria-label="More">${I.more}</button>`) + "<main>";
+    h += `<div class="group hero"><div><span class="pill s-${p.status}">${STATUS[p.status]}</span></div><h3>${esc(title(p))}</h3>${p.question ? `<div class="q">${ic("question", "sm")}<span>${esc(p.question)}</span></div>` : ""}<div class="meta">${dateLine}</div>${cap ? `<div class="meta">${ic("capability", "xs")}Builds: ${esc(cap.name)}</div>` : ""}${p.status === "operationalized" && p.routine ? `<div class="meta">${ic("practice", "xs")}${esc(p.routine)}</div>` : ""}</div>`;
     h += `<div class="group"><div class="stats"><div class="stat"><b>${doneCount(p)}/${tracked(p)}</b><span>done</span></div><div class="stat"><b>${pct(rate(p))}</b><span>hit rate</span></div><div class="stat"><b>${streak(p)}</b><span>streak</span></div><div class="stat"><b>${best(p)}</b><span>best</span></div>${p.metric ? `<div class="stat"><b>${metricTotal(p)}</b><span>${esc(p.metric)}</span></div>` : ""}</div></div>`;
     const t = today();
-    h += `<section><h2>Log</h2><div class="group"><div class="pad" style="padding-bottom:0"><div class="seg"><button class="${ui.gridMode === "log" ? "on" : ""}" data-act="gridMode" data-v="log">Tap to log</button><button class="${ui.gridMode === "note" ? "on" : ""}" data-act="gridMode" data-v="note">Tap to add note</button></div></div><div class="grid">${gridDays(p).map(k => { const l = p.logs[k]; const fut = k > t; return `<button class="cell ${l ? (l.did ? "d" : "m") : ""} ${ui.just && ui.just.k === k ? "just" : ""} ${k === t ? "today" : ""} ${fut ? "future" : ""}" data-act="cell" data-id="${p.id}" data-k="${k}" ${fut ? "disabled" : ""} aria-label="${fmt(k)}${l ? (l.did ? " done" : " missed") : ""}">${parse(k).getDate()}${l?.note ? '<span class="dot"></span>' : ""}</button>`; }).join("")}</div></div><p class="foot">${ui.gridMode === "log" ? "Tap a day: done → missed → clear." : "Tap a day to add a field note or a value."}</p></section>`;
+    h += `<section><h2>Log</h2><div class="group"><div class="pad" style="padding-bottom:0"><div class="seg"><button class="${ui.gridMode === "log" ? "on" : ""}" data-act="gridMode" data-v="log">Tap to log</button><button class="${ui.gridMode === "note" ? "on" : ""}" data-act="gridMode" data-v="note">Tap to add note</button></div></div><div class="grid">${gridDays(p).map(k => { const l = p.logs[k]; const fut = k > t; return `<button class="cell ${l ? (l.did ? "d" : "m") : ""} ${ui.just && ui.just.k === k ? "just" : ""} ${k === t ? "today" : ""} ${fut ? "future" : ""}" data-act="cell" data-id="${p.id}" data-k="${k}" ${fut ? "disabled" : ""} aria-label="${fmt(k)}${l ? (l.did ? " done" : " missed") : ""}">${parse(k).getDate()}${l?.note ? '<span class="dot"></span>' : ""}</button>`; }).join("")}</div></div><p class="foot">${ui.gridMode === "log" ? "Tap a day to cycle it: done, missed, clear." : "Tap a day to add a field note or a value."}</p></section>`;
     const rc = reasonCounts(p);
     if (rc.length) {
       const topR = rc.reduce((a, b) => (b[1] > a[1] ? b : a))[0];
-      h += `<section><h2>Triple Check · why I missed</h2><div class="group">${rc.map(([r, n]) => `<div class="row" style="padding-right:14px"><span class="row-main" style="cursor:default">${REASONS[r][0]}</span><span class="row-sub">${n}×</span></div>`).join("")}</div><p class="foot">${REASONS[topR][2]}</p></section>`;
+      h += `<section><h2>Triple Check · why I missed</h2><div class="group">${rc.map(([r, n]) => `<div class="row" style="padding-right:14px"><span class="row-main" style="cursor:default;display:flex;gap:10px;align-items:center">${ic(r)}${REASONS[r][0]}</span><span class="row-sub">${n}×</span></div>`).join("")}</div><p class="foot">${REASONS[topR][2]}</p></section>`;
     }
-    h += `<section><h2>Outputs</h2><div class="group">${p.outputs.slice().sort((a, b) => b.date.localeCompare(a.date)).map(o => `<button class="link-row" data-act="editOutput" data-id="${p.id}" data-o="${o.id}"><span class="grow"><span class="row-title">${esc(o.title)}</span><span class="row-sub">${KINDS[o.kind]} · ${fmt(o.date)}${o.op ? " · in use" : ""}</span></span>${o.op ? `<span class="pill">${I.cog2} in use</span>` : ""}${I.chev}</button>`).join("")}<button class="action" data-act="addOutput" data-id="${p.id}">${I.plus} Log output</button></div><p class="foot">What did this experiment produce? Insights, things you made, data.</p></section>`;
+    h += `<section><h2>Outputs</h2><div class="group">${p.outputs.slice().sort((a, b) => b.date.localeCompare(a.date)).map(o => `<button class="link-row" data-act="editOutput" data-id="${p.id}" data-o="${o.id}">${ic(o.kind, "kind")}<span class="grow"><span class="row-title">${esc(o.title)}</span><span class="row-sub">${KINDS[o.kind]} · ${fmt(o.date)}${o.op ? " · in use" : ""}</span></span>${o.op ? `<span class="pill s-operationalized">${ic("in-use", "xs")}In use</span>` : ""}${I.chev}</button>`).join("")}<button class="action" data-act="addOutput" data-id="${p.id}">${I.plus} Log output</button></div><p class="foot">What did this experiment produce? Insights, things you made, data.</p></section>`;
     h += `<section><h2>${needsReview(p) ? "Review · pact finished" : "Review"}</h2><div class="group">
       <div class="field"><label for="plus-${p.id}">Plus: what worked</label><textarea id="plus-${p.id}" rows="2" data-bind="plus" data-id="${p.id}">${esc(p.plus)}</textarea></div>
       <div class="field"><label for="minus-${p.id}">Minus: what didn't</label><textarea id="minus-${p.id}" rows="2" data-bind="minus" data-id="${p.id}">${esc(p.minus)}</textarea></div>
       <div class="field"><label for="next-${p.id}">Next: what I'll try</label><textarea id="next-${p.id}" rows="2" data-bind="next" data-id="${p.id}">${esc(p.next)}</textarea></div>`;
     if (p.status === "active" || p.status === "paused") {
-      h += `<div class="stepper"><b>Persist: +${ui.persistDays} days</b><button data-act="persistStep" data-v="-1" aria-label="Fewer days">−</button><button data-act="persistStep" data-v="1" aria-label="More days">+</button></div>
-        <button class="action" data-act="persist" data-id="${p.id}">↻ Persist<small>Keep going for ${ui.persistDays} more days</small></button>
-        ${p.status === "active" ? `<button class="action" data-act="pause" data-id="${p.id}">❙❙ Pause<small>Stop for now, keep the data</small></button>` : ""}
-        <button class="action" data-act="pivot" data-id="${p.id}">⤳ Pivot<small>Change one thing and start a new pact</small></button>`;
+      h += `<div class="stepper"><b>Persist: +${ui.persistDays} days</b><button data-act="persistStep" data-v="-1" aria-label="Fewer days">${ic("minus", "sm")}</button><button data-act="persistStep" data-v="1" aria-label="More days">${ic("plus", "sm")}</button></div>
+        <button class="action" data-act="persist" data-id="${p.id}">${ic("persist")}Persist<small>Keep going for ${ui.persistDays} more days</small></button>
+        ${p.status === "active" ? `<button class="action" data-act="pause" data-id="${p.id}">${ic("pause")}Pause<small>Stop for now, keep the data</small></button>` : ""}
+        <button class="action" data-act="pivot" data-id="${p.id}">${ic("pivot")}Pivot<small>Change one thing and start a new pact</small></button>`;
     }
     if (p.decision !== "undecided") h += `<div class="check">Decision<em style="font-size:.88rem;color:var(--ink)">${cap1(p.decision)}</em></div>`;
     h += `</div><p class="foot">Success means you ran the pact, whatever the outcome. Decide from the data.</p></section>`;
-    h += `<section><h2>Operationalize</h2><div class="group">${p.status === "operationalized" ? `<button class="action" data-act="operationalize" data-id="${p.id}">Edit routine and capability</button><button class="action" data-act="retire" data-id="${p.id}">Retire practice</button>` : `<button class="action" data-act="operationalize" data-id="${p.id}">${I.cog2} Operationalize: make it a practice<small>Keeps running with no end date and feeds a capability</small></button>`}</div></section>`;
+    h += `<section><h2>Operationalize</h2><div class="group">${p.status === "operationalized" ? `<button class="action" data-act="operationalize" data-id="${p.id}">${ic("edit")}Edit routine and capability</button><button class="action" data-act="retire" data-id="${p.id}">${ic("check-ok")}Retire practice</button>` : `<button class="action" data-act="operationalize" data-id="${p.id}">${ic("practice")}Operationalize: make it a practice<small>Keeps running with no end date and feeds a capability</small></button>`}</div></section>`;
     return h + "</main>";
   }
 
   function viewCaps() {
     let h = top("Capabilities", plusBtn("newCap")) + "<main>";
-    if (!db.caps.length) return h + `<div class="group empty"><h3>No capabilities yet</h3><p>When an experiment earns its place, operationalize it. Practices roll up into capabilities.</p><button class="btn primary" data-act="newCap">New capability</button></div></main>`;
+    if (!db.caps.length) return h + `<div class="group empty">${ic("capability", "xl")}<h3>No capabilities yet</h3><p>When an experiment earns its place, operationalize it. Practices roll up into capabilities.</p><button class="btn primary" data-act="newCap">New capability</button></div></main>`;
     h += `<div class="group">${db.caps.map(c => { const ps = capPacts(c); const pr = ps.filter(p => p.status === "operationalized").length; return `<button class="link-row" data-act="openCap" data-id="${c.id}"><span class="grow" style="gap:6px"><span style="display:flex;gap:8px;align-items:baseline"><span class="row-title" style="flex:1">${esc(c.name)}</span><span class="pill">${cap1(c.level)}</span></span>${levelBar(c.level)}<span class="row-sub">${ps.length - pr} experiments · ${pr} practices · ${ps.reduce((s, p) => s + doneCount(p), 0)} reps</span></span>${I.chev}</button>`; }).join("")}</div>`;
-    h += `<p class="foot">Experiment → practice → capability. Levels: Exploring, Practicing, Proficient, Teaching.</p>`;
+    const nPr = db.pacts.filter(p => p.status === "operationalized").length;
+    h = h.replace("<main>", `<main><section><h2>How capabilities grow</h2><div class="group pad">${growthPath(db.pacts.length - nPr, nPr, db.caps.length)}</div></section>`);
+    h += `<p class="foot">Levels: Exploring, Practicing, Proficient, Teaching.</p>`;
     return h + "</main>";
   }
 
   function viewCap(c) {
     const ps = capPacts(c), pr = ps.filter(p => p.status === "operationalized"), ex = ps.filter(p => p.status !== "operationalized");
     const outs = ps.flatMap(p => p.outputs).sort((a, b) => b.date.localeCompare(a.date));
-    let h = top("", `<button class="icon-btn" data-act="delCap" data-id="${c.id}" aria-label="Delete capability">${I.x}</button>`) + "<main>";
+    let h = top("", `<button class="icon-btn" data-act="delCap" data-id="${c.id}" aria-label="Delete capability">${I.trash}</button>`) + "<main>";
     h += `<div class="group"><div class="field"><label for="cap-name">Capability</label><input id="cap-name" data-cbind="name" data-id="${c.id}" value="${esc(c.name)}" style="font:700 1.25rem var(--font-display)"></div><div class="pad" style="display:grid;gap:8px"><div class="seg">${LEVELS.map(l => `<button class="${c.level === l ? "on" : ""}" data-act="level" data-id="${c.id}" data-v="${l}">${cap1(l)}</button>`).join("")}</div>${levelBar(c.level)}</div></div>`;
     h += `<section><h2>Program</h2><div class="group"><div class="field"><label for="cap-why">Why this matters to me</label><textarea id="cap-why" rows="2" data-cbind="why" data-id="${c.id}">${esc(c.why)}</textarea></div><div class="field"><label for="cap-target">What good looks like</label><textarea id="cap-target" rows="2" data-cbind="target" data-id="${c.id}">${esc(c.target)}</textarea></div></div></section>`;
     h += `<section><h2>Evidence</h2><div class="group"><div class="stats"><div class="stat"><b>${ex.length}</b><span>experiments</span></div><div class="stat"><b>${pr.length}</b><span>practices</span></div><div class="stat"><b>${ps.reduce((s, p) => s + doneCount(p), 0)}</b><span>reps</span></div><div class="stat"><b>${outs.filter(o => o.op).length}/${outs.length}</b><span>outputs in use</span></div></div></div></section>`;
     h += `<section><h2>Practices (operationalized)</h2><div class="group">${pr.length ? pr.map(summaryRow).join("") : `<div class="pad foot" style="margin:0">Operationalize an experiment to add a practice.</div>`}</div></section>`;
     h += `<section><h2>Experiments</h2><div class="group">${ex.map(summaryRow).join("")}<button class="action" data-act="newPact" data-cap="${c.id}">${I.plus} Start an experiment for this</button></div></section>`;
-    if (outs.length) h += `<section><h2>Outputs</h2><div class="group">${outs.map(o => `<div class="link-row" style="cursor:default"><span class="grow"><span class="row-title">${esc(o.title)}</span><span class="row-sub">${KINDS[o.kind]} · ${fmt(o.date)}</span></span>${o.op ? `<span class="pill">${I.cog2} in use</span>` : ""}</div>`).join("")}</div></section>`;
+    if (outs.length) h += `<section><h2>Outputs</h2><div class="group">${outs.map(o => `<div class="link-row" style="cursor:default">${ic(o.kind, "kind")}<span class="grow"><span class="row-title">${esc(o.title)}</span><span class="row-sub">${KINDS[o.kind]} · ${fmt(o.date)}</span></span>${o.op ? `<span class="pill s-operationalized">${ic("in-use", "xs")}In use</span>` : ""}</div>`).join("")}</div></section>`;
     return h + "</main>";
   }
 
@@ -479,11 +523,11 @@ html[data-nav="back"]::view-transition-new(root) { animation: vt-in-left .32s va
 
   function viewSettings() {
     let h = top("Settings") + "<main>";
-    h += `<section><h2>Reminder</h2><div class="group"><div class="check">Daily nudge<em>21:00 on iPhone</em></div></div><p class="foot">The iOS app uses a local notification, so no internet is needed. Not active in this web demo.</p></section>`;
-    h += `<section><h2>Cloud sync (optional)</h2><div class="group"><div class="check">iCloud sync<em>iOS app only</em></div></div><p class="foot">Off by default, so everything stays on the phone. When turned on, the app mirrors your data to your private iCloud.</p></section>`;
-    h += `<section><h2>Backup</h2><div class="group"><button class="action" data-act="export">Export backup (JSON)</button><button class="action" data-act="import">Import backup</button></div><p class="foot">Same idea as the app's export and import: a plain JSON file you keep in Files or iCloud Drive.</p></section>`;
-    h += `<section><h2>Field guide</h2><div class="group">${GUIDE.map(([t, d]) => `<div class="guide"><b>${t}</b><p>${d}</p></div>`).join("")}</div><p class="foot">Inspired by Tiny Experiments by Anne-Laure Le Cunff.</p></section>`;
-    h += `<section><h2>Demo</h2><div class="group"><button class="action danger" data-act="reset">Reset sample data</button></div></section>`;
+    h += `<section><h2>Reminder</h2><div class="group"><div class="check">${ic("bell")}Daily nudge<em>21:00 on iPhone</em></div></div><p class="foot">The iOS app uses a local notification, so no internet is needed. Not active in this web demo.</p></section>`;
+    h += `<section><h2>Cloud sync (optional)</h2><div class="group"><div class="check">${ic("cloud")}iCloud sync<em>iOS app only</em></div></div><p class="foot">Off by default, so everything stays on the phone. When turned on, the app mirrors your data to your private iCloud.</p></section>`;
+    h += `<section><h2>Backup</h2><div class="group"><button class="action" data-act="export">${ic("export")}Export backup (JSON)</button><button class="action" data-act="import">${ic("import")}Import backup</button></div><p class="foot">Same idea as the app's export and import: a plain JSON file you keep in Files or iCloud Drive.</p></section>`;
+    h += `<section><h2>Field guide</h2><div class="group">${GUIDE.map(([t, d]) => `<div class="guide"><b>${ic(GUIDE_ICONS[t] || "guide", "sm")}${t}</b><p>${d}</p></div>`).join("")}</div><p class="foot">Inspired by Tiny Experiments by Anne-Laure Le Cunff.</p></section>`;
+    h += `<section><h2>Demo</h2><div class="group"><button class="action danger" data-act="reset">${ic("reset")}Reset sample data</button></div></section>`;
     return h + "</main>";
   }
 
@@ -531,7 +575,7 @@ html[data-nav="back"]::view-transition-new(root) { animation: vt-in-left .32s va
   const toast = msg => { const t = document.getElementById("toast"); t.textContent = msg; t.hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(() => (t.hidden = true), 1800); };
 
   function reasonSheet(p) {
-    sheet("What got in the way?", `<p class="foot" style="text-align:center;margin:0">Triple Check. No judgment, it's data.</p><div class="group">${Object.entries(REASONS).map(([k, [l, d]]) => `<button type="button" class="reason" data-act="reason" data-id="${p.id}" data-v="${k}"><span><b>${l}</b><span>${d}</span></span></button>`).join("")}</div><button type="button" class="btn block" data-act="close">Skip</button>`);
+    sheet("What got in the way?", `<p class="foot" style="text-align:center;margin:0">Triple Check. No judgment, it's data.</p><div class="group">${Object.entries(REASONS).map(([k, [l, d]]) => `<button type="button" class="reason" data-act="reason" data-id="${p.id}" data-v="${k}"><span class="tag">${ic(k)}</span><span><b>${l}</b><span>${d}</span></span></button>`).join("")}</div><button type="button" class="btn block" data-act="close">Skip</button>`);
   }
 
   function logSheet(p, k) {
@@ -549,7 +593,10 @@ html[data-nav="back"]::view-transition-new(root) { animation: vt-in-left .32s va
   function pactChecks(f) {
     const d = Number(f.duration.value) || 0;
     const rows = [["Purposeful", f.question.value.trim() !== "", "Add a question"], ["Actionable", f.action.value.trim() !== "", "Name a concrete action"], ["Continuous", d >= 3, "Repeat it a few days at least"], ["Trackable", true, ""]];
-    return rows.map(([l, ok, hint]) => `<div class="check"><span class="${ok ? "ok" : "no"}">${ok ? "●" : "○"}</span>${l}${ok ? "" : `<em>${hint}</em>`}</div>`).join("");
+    // Tick draws on only when a criterion flips to met, not on every keystroke.
+    const prev = f._checks || null;
+    f._checks = Object.fromEntries(rows.map(([l, ok]) => [l, ok]));
+    return rows.map(([l, ok, hint]) => `<div class="check">${ok ? `<svg class="ic ok ${prev && !prev[l] ? "tick" : ""}" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path pathLength="1" d="M8.2 12.3l2.6 2.6 5.1-5.3"/></svg>` : ic("check-todo")}${l}${ok ? "" : `<em>${hint}</em>`}</div>`).join("");
   }
 
   function pactEditor(mode, p, capId) {
@@ -561,7 +608,7 @@ html[data-nav="back"]::view-transition-new(root) { animation: vt-in-left .32s va
     sheet(titleText, `
       <section><h2>The pact</h2><div class="group">
         <div class="field"><div class="inline"><span>I will</span><input id="pe-action" name="action" value="${esc(src.action || "")}" placeholder="write 200 words" autocomplete="off"></div></div>
-        <div class="stepper"><b>for <span id="pe-dur-lbl">${src.duration || 14}</span> days</b><button type="button" data-act="dur" data-v="-1" aria-label="Fewer days">−</button><button type="button" data-act="dur" data-v="1" aria-label="More days">+</button></div>
+        <div class="stepper"><b>for <span id="pe-dur-lbl">${src.duration || 14}</span> days</b><button type="button" data-act="dur" data-v="-1" aria-label="Fewer days">${ic("minus", "sm")}</button><button type="button" data-act="dur" data-v="1" aria-label="More days">${ic("plus", "sm")}</button></div>
         <div class="pad" style="padding-top:0"><div class="seg" id="pe-presets">${[7, 14, 21, 30].map(d => `<button type="button" class="${(src.duration || 14) === d ? "on" : ""}" data-act="preset" data-v="${d}">${d}d</button>`).join("")}</div></div>
         <input type="hidden" name="duration" value="${src.duration || 14}">
       </div><p class="foot">${mode === "pivot" ? "Pivot: keep what worked, change one thing." : "Small and repeatable beats big and vague."}</p></section>
@@ -640,7 +687,7 @@ html[data-nav="back"]::view-transition-new(root) { animation: vt-in-left .32s va
     newPact: el => pactEditor("new", null, el.dataset.cap),
     pactMenu: el => {
       const p = P(el.dataset.id);
-      sheet("Pact", `<div class="group"><button type="button" class="action" data-act="editPact" data-id="${p.id}">Edit pact</button>${p.status === "active" ? `<button type="button" class="action" data-act="pause" data-id="${p.id}">Pause</button>` : ""}${p.status === "paused" || p.status === "completed" ? `<button type="button" class="action" data-act="resume" data-id="${p.id}">Resume</button>` : ""}<button type="button" class="action danger" data-act="askDelete" data-id="${p.id}">Delete</button></div>`);
+      sheet("Pact", `<div class="group"><button type="button" class="action" data-act="editPact" data-id="${p.id}">${ic("edit")}Edit pact</button>${p.status === "active" ? `<button type="button" class="action" data-act="pause" data-id="${p.id}">${ic("pause")}Pause</button>` : ""}${p.status === "paused" || p.status === "completed" ? `<button type="button" class="action" data-act="resume" data-id="${p.id}">${ic("persist")}Resume</button>` : ""}<button type="button" class="action danger" data-act="askDelete" data-id="${p.id}">${ic("trash")}Delete</button></div>`);
     },
     editPact: el => pactEditor("edit", P(el.dataset.id)),
     pivot: el => pactEditor("pivot", P(el.dataset.id)),
@@ -663,7 +710,7 @@ html[data-nav="back"]::view-transition-new(root) { animation: vt-in-left .32s va
     deleteCap: el => { db.caps = db.caps.filter(c => c.id !== el.dataset.id); db.pacts.forEach(p => { if (p.capId === el.dataset.id) p.capId = null; }); save(); close(); ui.stack.pop(); render(); },
     export: () => {
       const json = JSON.stringify({ version: 1, exportedAt: new Date().toISOString(), capabilities: db.caps, pacts: db.pacts }, null, 2);
-      sheet("Export backup", `<pre class="json" id="export-json">${esc(json)}</pre><button type="button" class="btn primary block" data-act="copy">Copy JSON</button><p class="foot">On iPhone this saves a .json file to Files or iCloud Drive.</p>`);
+      sheet("Export backup", `<pre class="json" id="export-json">${esc(json)}</pre><button type="button" class="btn primary block" data-act="copy">${ic("copy", "sm")}Copy JSON</button><p class="foot">On iPhone this saves a .json file to Files or iCloud Drive.</p>`);
     },
     copy: () => {
       const text = document.getElementById("export-json").textContent;

@@ -111,15 +111,16 @@ struct TodayRow: View {
 
     private var today: CheckIn? { pact.checkIn(on: .now) }
 
-    private var subtitle: String {
+    /// "Day 5/14 · [streak icon] 3 · 80%". The streak glyph is the custom tl-streak-inline icon (12pt).
+    private var subtitle: Text {
         let streak = pact.currentStreak()
-        let fire = streak > 0 ? " · 🔥\(streak)" : ""
+        let streakText = streak > 0 ? Text(" · \(Image("tl-streak-inline")) \(streak)") : Text(verbatim: "")
         if pact.status == .operationalized {
             let cap = pact.capability.map { " · \($0.name)" } ?? ""
-            return "Practice\(cap)\(fire)"
+            return Text("Practice\(cap)\(streakText)")
         }
         let day = min(pact.dayNumber(), pact.durationDays)
-        return "Day \(day)/\(pact.durationDays)\(fire) · \(pact.hitRate().percent)"
+        return Text("Day \(day)/\(pact.durationDays)\(streakText) · \(pact.hitRate().percent)")
     }
 
     var body: some View {
@@ -128,7 +129,7 @@ struct TodayRow: View {
                 Text(pact.action)
                     .font(.headline)
                     .lineLimit(2)
-                Text(subtitle)
+                subtitle
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }

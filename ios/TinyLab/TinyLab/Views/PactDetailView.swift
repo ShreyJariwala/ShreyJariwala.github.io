@@ -138,7 +138,7 @@ struct PactDetailView: View {
         } header: {
             Text("Log")
         } footer: {
-            Text("Tap a day: done → missed → clear. Long-press to add a field note.")
+            Text("Tap a day to cycle it: done, missed, clear. Long-press to add a field note.")
         }
     }
 
@@ -177,7 +177,7 @@ struct PactDetailView: View {
                             .foregroundStyle(.primary)
                         Spacer()
                         if output.isOperationalized {
-                            Image(systemName: "gearshape.2.fill").foregroundStyle(.tint)
+                            Image("tl-in-use").resizable().frame(width: 16, height: 16).foregroundStyle(.tint)
                         }
                         Text(output.date.formatted(.dateTime.month().day()))
                             .font(.caption)
@@ -197,7 +197,7 @@ struct PactDetailView: View {
         } header: {
             Text("Outputs")
         } footer: {
-            Text("What did this experiment produce? Insights, things you made, data. ⚙︎ = put to work.")
+            Text("What did this experiment produce? Insights, things you made, data. The plug marks outputs that are in use.")
         }
     }
 
@@ -230,7 +230,7 @@ struct PactDetailView: View {
                 Button("Edit routine & capability", systemImage: "slider.horizontal.3") { operationalizing = true }
                 Button("Retire practice", systemImage: "archivebox") { pact.status = .completed }
             } else {
-                Button("Operationalize → make it a practice", systemImage: "gearshape.2") { operationalizing = true }
+                Button("Operationalize: make it a practice", systemImage: "gearshape.2") { operationalizing = true }
             }
         } header: {
             Text("Operationalize")
