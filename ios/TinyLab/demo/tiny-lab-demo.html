@@ -3,161 +3,257 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
 <style>
-/* Layout: one phone-width lab notebook column, sticky header + tab bar; sheets slide up from the bottom. */
+/* Layout: one phone-width lab notebook. A deep-teal shell band holds the header and the flask meter;
+   work areas sit on a cool tinted ground; sheets rise from the bottom.
+   Colour roles (OKLCH, AA-checked in both themes): canvas / surface / well, ink / ink-2,
+   shell / on-shell, action, done / miss / warn, liquid (the flask's fill — the one signature colour). */
 :root {
-  --bg: #eef3f2;
-  --surface: #ffffff;
-  --surface-2: #e2eae9;
-  --ink: #122022;
-  --muted: #5d7374;
-  --line: #d3dfde;
-  --accent: #0f7a85;
-  --accent-ink: #ffffff;
-  --accent-soft: #d6ecee;
-  --done: #2f9e5b;
-  --miss: #d0493f;
-  --warn: #b86b00;
-  --scrim: rgba(10, 20, 22, .42);
+  --canvas: oklch(0.965 0.014 195);
+  --surface: oklch(0.995 0.004 195);
+  --well: oklch(0.925 0.02 195);
+  --line: oklch(0.885 0.02 200);
+  --ink: oklch(0.24 0.03 210);
+  --ink-2: oklch(0.47 0.035 210);
+  --shell: oklch(0.36 0.07 205);
+  --shell-line: oklch(0.44 0.07 205);
+  --on-shell: oklch(0.97 0.02 190);
+  --on-shell-2: oklch(0.84 0.05 190);
+  --action: oklch(0.50 0.10 205);
+  --on-action: oklch(1 0 0);
+  --action-soft: oklch(0.925 0.04 200);
+  --done: oklch(0.52 0.13 150);
+  --done-soft: oklch(0.93 0.05 150);
+  --miss: oklch(0.54 0.17 28);
+  --miss-soft: oklch(0.94 0.04 28);
+  --on-state: oklch(1 0 0);
+  --warn: oklch(0.50 0.11 65);
+  --warn-soft: oklch(0.94 0.05 80);
+  --liquid: oklch(0.82 0.15 158);
+  --scrim: oklch(0.2 0.03 210 / 0.45);
+  --shadow: 0 1px 2px oklch(0.3 0.03 210 / 0.08), 0 8px 24px oklch(0.3 0.03 210 / 0.06);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in: cubic-bezier(0.7, 0, 0.84, 0);
   --font-display: "Bricolage Grotesque", "Avenir Next", system-ui, sans-serif;
   --font-body: "IBM Plex Sans", -apple-system, "Segoe UI", system-ui, sans-serif;
   --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #0c1415; --surface: #142123; --surface-2: #1d2e30; --ink: #e4efee; --muted: #8ea6a6;
-    --line: #243a3c; --accent: #45b8c2; --accent-ink: #062226; --accent-soft: #173b3f;
-    --done: #45b870; --miss: #e2665c; --warn: #e0a042; --scrim: rgba(0,0,0,.6); color-scheme: dark;
+    --canvas: oklch(0.17 0.02 210); --surface: oklch(0.215 0.022 210); --well: oklch(0.28 0.025 210); --line: oklch(0.31 0.025 210);
+    --ink: oklch(0.94 0.012 195); --ink-2: oklch(0.74 0.03 200);
+    --shell: oklch(0.26 0.05 205); --shell-line: oklch(0.33 0.05 205); --on-shell: oklch(0.96 0.02 190); --on-shell-2: oklch(0.80 0.05 190);
+    --action: oklch(0.76 0.11 200); --on-action: oklch(0.18 0.03 210); --action-soft: oklch(0.31 0.05 205);
+    --done: oklch(0.72 0.15 150); --done-soft: oklch(0.29 0.05 150); --miss: oklch(0.70 0.15 28); --miss-soft: oklch(0.29 0.05 28);
+    --on-state: oklch(0.18 0.03 210); --warn: oklch(0.80 0.12 75); --warn-soft: oklch(0.30 0.05 75);
+    --liquid: oklch(0.80 0.15 158); --scrim: oklch(0.05 0.01 210 / 0.6);
+    --shadow: 0 1px 2px oklch(0 0 0 / 0.3), 0 8px 24px oklch(0 0 0 / 0.25); color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
-  --bg: #0c1415; --surface: #142123; --surface-2: #1d2e30; --ink: #e4efee; --muted: #8ea6a6;
-  --line: #243a3c; --accent: #45b8c2; --accent-ink: #062226; --accent-soft: #173b3f;
-  --done: #45b870; --miss: #e2665c; --warn: #e0a042; --scrim: rgba(0,0,0,.6); color-scheme: dark;
+  --canvas: oklch(0.17 0.02 210); --surface: oklch(0.215 0.022 210); --well: oklch(0.28 0.025 210); --line: oklch(0.31 0.025 210);
+  --ink: oklch(0.94 0.012 195); --ink-2: oklch(0.74 0.03 200);
+  --shell: oklch(0.26 0.05 205); --shell-line: oklch(0.33 0.05 205); --on-shell: oklch(0.96 0.02 190); --on-shell-2: oklch(0.80 0.05 190);
+  --action: oklch(0.76 0.11 200); --on-action: oklch(0.18 0.03 210); --action-soft: oklch(0.31 0.05 205);
+  --done: oklch(0.72 0.15 150); --done-soft: oklch(0.29 0.05 150); --miss: oklch(0.70 0.15 28); --miss-soft: oklch(0.29 0.05 28);
+  --on-state: oklch(0.18 0.03 210); --warn: oklch(0.80 0.12 75); --warn-soft: oklch(0.30 0.05 75);
+  --liquid: oklch(0.80 0.15 158); --scrim: oklch(0.05 0.01 210 / 0.6);
+  --shadow: 0 1px 2px oklch(0 0 0 / 0.3), 0 8px 24px oklch(0 0 0 / 0.25); color-scheme: dark;
 }
 * { box-sizing: border-box; }
 html, body { height: 100%; }
-body { background: var(--bg); color: var(--ink); font: 15px/1.45 var(--font-body); margin: 0; }
+body { background: var(--canvas); color: var(--ink); font: 15px/1.45 var(--font-body); margin: 0; caret-color: var(--action); accent-color: var(--action); scrollbar-color: var(--line) transparent; }
+::selection { background: var(--action-soft); color: var(--ink); }
 button, input, textarea, select { font: inherit; color: inherit; }
-button { cursor: pointer; }
-:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+button { cursor: pointer; -webkit-tap-highlight-color: transparent; }
+:focus-visible { outline: 2px solid var(--action); outline-offset: 2px; border-radius: 6px; }
 
-.app { max-width: 460px; margin: 0 auto; min-height: 100%; display: flex; flex-direction: column; background: var(--bg); }
+.app { max-width: 460px; margin: 0 auto; min-height: 100%; display: flex; flex-direction: column; background: var(--canvas); }
 @media (min-width: 520px) { .app { border-inline: 1px solid var(--line); } }
 
-.top { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg); padding: 14px 16px 10px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid var(--line); }
+/* Shell band */
+.top { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--shell); color: var(--on-shell); padding: 14px 16px 12px; display: flex; align-items: center; gap: 12px; view-transition-name: shell; }
 .top h1 { font: 700 1.6rem/1.1 var(--font-display); margin: 0; flex: 1; letter-spacing: -.01em; text-wrap: balance; }
-.top .date { display: block; font: 500 .72rem var(--font-mono); color: var(--muted); letter-spacing: .06em; text-transform: uppercase; margin-bottom: 2px; }
-.icon-btn { border: 0; background: var(--accent-soft); color: var(--accent); width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center; flex: none; }
-.back { border: 0; background: none; color: var(--accent); padding: 6px 0; font-weight: 600; display: flex; align-items: center; gap: 2px; }
+.top .date { display: block; font: 500 .72rem var(--font-mono); color: var(--on-shell-2); letter-spacing: .06em; text-transform: uppercase; margin-bottom: 3px; }
+.icon-btn { border: 0; background: oklch(1 0 0 / 0.12); color: var(--on-shell); width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center; flex: none; transition: background .15s, transform .12s var(--ease-out); }
+.icon-btn:hover { background: oklch(1 0 0 / 0.2); }
+.icon-btn:active { transform: scale(.92); }
+.icon-btn.danger { color: var(--on-shell); }
+.back { border: 0; background: none; color: var(--on-shell); padding: 6px 0; font-weight: 600; display: flex; align-items: center; gap: 2px; }
 
-main { flex: 1; padding: 12px 16px 24px; display: flex; flex-direction: column; gap: 18px; }
-.demo-note { font-size: .78rem; color: var(--muted); background: var(--surface-2); border-radius: 10px; padding: 8px 12px; }
+/* Flask meter: today's logged share, the app's signature move */
+.meter { display: flex; align-items: center; gap: 8px; color: var(--on-shell-2); font: 500 .78rem var(--font-mono); font-variant-numeric: tabular-nums; }
+.meter b { color: var(--on-shell); font: 700 1.05rem var(--font-display); }
+.flask { width: 30px; height: 36px; flex: none; overflow: visible; }
+.flask .glass { fill: none; stroke: var(--on-shell); stroke-width: 2.4; stroke-linejoin: round; }
+.flask .fill { fill: var(--liquid); transform: translateY(var(--lvl-y, 45px)); transition: transform .9s var(--ease-out); }
+.flask .surface { fill: none; stroke: oklch(1 0 0 / 0.55); stroke-width: 1.4; transform: translateY(var(--lvl-y, 45px)); transition: transform .9s var(--ease-out); }
+.flask.full .glass { stroke: var(--liquid); }
 
-section h2 { font: 500 .72rem var(--font-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin: 0 0 6px 4px; }
-.group { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
+main { flex: 1; padding: 14px 16px 24px; display: flex; flex-direction: column; gap: 18px; }
+.demo-note { font-size: .78rem; color: var(--ink-2); background: var(--well); border-radius: 10px; padding: 8px 12px; margin: 0; }
+
+section h2 { font: 500 .72rem var(--font-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--ink-2); margin: 0 0 6px 4px; }
+.group { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; box-shadow: var(--shadow); }
 .group > * + * { border-top: 1px solid var(--line); }
-.foot { font-size: .78rem; color: var(--muted); margin: 6px 4px 0; }
+.foot { font-size: .78rem; color: var(--ink-2); margin: 6px 4px 0; }
 .pad { padding: 12px 14px; }
 
 .progress { padding: 12px 14px; display: grid; gap: 8px; }
 .progress b { font-weight: 600; }
-.bar { height: 8px; background: var(--surface-2); border-radius: 99px; overflow: hidden; }
-.bar > i { display: block; height: 100%; background: var(--accent); border-radius: 99px; transition: width .3s ease; }
+.bar { height: 8px; background: var(--well); border-radius: 99px; overflow: hidden; }
+.bar > i { display: block; height: 100%; width: 100%; background: linear-gradient(90deg, var(--action), var(--done)); border-radius: 99px; transform-origin: left; transform: scaleX(var(--p, 0)); transition: transform .7s var(--ease-out); }
 
-.row { display: flex; align-items: center; gap: 8px; padding: 10px 10px 10px 14px; }
+/* Today rows */
+.row { display: flex; align-items: center; gap: 8px; padding: 10px 10px 10px 14px; transition: background .2s; }
+.row.logged-done { background: color-mix(in oklch, var(--done-soft) 55%, var(--surface)); }
+.row.logged-miss { background: color-mix(in oklch, var(--miss-soft) 45%, var(--surface)); }
 .row-main { flex: 1; min-width: 0; text-align: left; border: 0; background: none; padding: 2px 0; display: grid; gap: 2px; }
 .row-title { font-weight: 600; overflow-wrap: anywhere; }
-.row-sub { font: 500 .75rem var(--font-mono); color: var(--muted); font-variant-numeric: tabular-nums; }
-.log { width: 44px; height: 44px; border-radius: 50%; border: 0; display: grid; place-items: center; flex: none; transition: transform .12s ease, background .15s; }
+.row-sub { font: 500 .75rem var(--font-mono); color: var(--ink-2); font-variant-numeric: tabular-nums; }
+.log { position: relative; isolation: isolate; overflow: hidden; width: 44px; height: 44px; border-radius: 50%; border: 1.5px solid transparent; display: grid; place-items: center; flex: none; transition: transform .12s var(--ease-out), color .2s; }
+.log svg { position: relative; z-index: 1; }
+.log::before { content: ""; position: absolute; inset: 0; z-index: 0; clip-path: inset(100% 0 0 0); transition: clip-path .18s var(--ease-in); }
 .log:active { transform: scale(.9); }
-.log.miss { background: color-mix(in srgb, var(--miss) 14%, transparent); color: var(--miss); }
-.log.done { background: color-mix(in srgb, var(--done) 14%, transparent); color: var(--done); }
-.log.miss.on { background: var(--miss); color: #fff; }
-.log.done.on { background: var(--done); color: #fff; }
-.link-row { display: flex; align-items: center; gap: 10px; width: 100%; border: 0; background: none; text-align: left; padding: 12px 14px; }
+.log.miss { background: var(--miss-soft); color: var(--miss); }
+.log.done { background: var(--done-soft); color: var(--done); }
+.log.miss::before { background: var(--miss); }
+.log.done::before { background: var(--done); }
+.log.on { color: var(--on-state); }
+.log.on::before { clip-path: inset(0 0 0 0); }
+.log.just::before { animation: rise .42s var(--ease-out) both; }
+.log.just.done svg path { stroke-dasharray: 24; animation: draw .34s .12s var(--ease-out) both; }
+@keyframes rise { from { clip-path: inset(100% 0 0 0 round 0); } to { clip-path: inset(0 0 0 0); } }
+@keyframes draw { from { stroke-dashoffset: 24; } to { stroke-dashoffset: 0; } }
+
+.link-row { display: flex; align-items: center; gap: 10px; width: 100%; border: 0; background: none; text-align: left; padding: 12px 14px; transition: background .15s; }
+.link-row:hover, .action:hover, .reason:hover { background: color-mix(in oklch, var(--action-soft) 45%, transparent); }
 .link-row .grow { flex: 1; min-width: 0; display: grid; gap: 2px; }
-.chev { color: var(--muted); flex: none; }
-.pill { font: 600 .7rem var(--font-body); padding: 2px 8px; border-radius: 99px; background: var(--accent-soft); color: var(--accent); white-space: nowrap; }
-.pill.warn { background: color-mix(in srgb, var(--warn) 16%, transparent); color: var(--warn); }
+.chev { color: var(--ink-2); flex: none; }
+
+/* Status pills: colour + word, never colour alone */
+.pill { font: 600 .7rem var(--font-body); padding: 2px 8px; border-radius: 99px; background: var(--action-soft); color: var(--action); white-space: nowrap; }
+.pill.s-operationalized { background: var(--done-soft); color: var(--done); }
+.pill.s-completed { background: var(--well); color: var(--ink-2); }
+.pill.s-paused, .pill.warn { background: var(--warn-soft); color: var(--warn); }
 
 .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(64px, 1fr)); gap: 4px; padding: 12px 8px; }
 .stat { text-align: center; display: grid; gap: 1px; }
 .stat b { font: 700 1.25rem var(--font-display); font-variant-numeric: tabular-nums; }
-.stat span { font-size: .7rem; color: var(--muted); }
+.stat span { font-size: .7rem; color: var(--ink-2); }
 
 .hero { padding: 14px; display: grid; gap: 8px; }
 .hero > * + * { border-top: 0; }
 .hero h3 { font: 700 1.3rem/1.2 var(--font-display); margin: 0; text-wrap: balance; }
-.hero .q { color: var(--muted); font-style: italic; }
-.meta { font: 500 .75rem var(--font-mono); color: var(--muted); }
+.hero .q { color: var(--ink-2); font-style: italic; }
+.meta { font: 500 .75rem var(--font-mono); color: var(--ink-2); }
 
+/* Day grid */
 .grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; padding: 12px; }
-.cell { aspect-ratio: 1; max-width: 100%; border-radius: 8px; border: 0; background: var(--surface-2); color: var(--muted); font: 500 .75rem var(--font-mono); position: relative; display: grid; place-items: center; }
-.cell.d { background: var(--done); color: #fff; }
-.cell.m { background: var(--miss); color: #fff; }
-.cell.today { box-shadow: 0 0 0 2px var(--ink); }
-.cell.future { opacity: .35; cursor: default; }
+.cell { aspect-ratio: 1; max-width: 100%; border-radius: 8px; border: 0; background: var(--well); color: var(--ink-2); font: 500 .75rem var(--font-mono); position: relative; display: grid; place-items: center; transition: background .2s, color .2s, transform .12s var(--ease-out); }
+.cell:not(:disabled):hover { box-shadow: inset 0 0 0 1.5px var(--action); }
+.cell:not(:disabled):active { transform: scale(.9); }
+.cell.d { background: var(--done); color: var(--on-state); }
+.cell.m { background: var(--miss); color: var(--on-state); }
+.cell.today { box-shadow: 0 0 0 2px var(--canvas), 0 0 0 4px var(--action); }
+.cell.future { opacity: .4; cursor: default; background: transparent; box-shadow: inset 0 0 0 1px var(--line); }
+.cell.just { animation: settle .26s var(--ease-out); }
+@keyframes settle { from { transform: scale(.82); } }
 .cell .dot { position: absolute; top: 4px; right: 4px; width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
-.seg { display: flex; background: var(--surface-2); border-radius: 10px; padding: 3px; gap: 3px; }
-.seg button { flex: 1; border: 0; background: none; padding: 6px 4px; border-radius: 8px; font-size: .82rem; font-weight: 500; color: var(--muted); }
-.seg button.on { background: var(--surface); color: var(--ink); box-shadow: 0 1px 2px rgba(0,0,0,.12); }
+.seg { display: flex; background: var(--well); border-radius: 10px; padding: 3px; gap: 3px; }
+.seg button { flex: 1; border: 0; background: none; padding: 6px 4px; border-radius: 8px; font-size: .82rem; font-weight: 500; color: var(--ink-2); transition: background .18s, color .18s; }
+.seg button.on { background: var(--surface); color: var(--ink); box-shadow: var(--shadow); }
 
-.field { display: grid; gap: 4px; padding: 10px 14px; }
-.field label, .lbl { font-size: .75rem; color: var(--muted); font-weight: 500; }
+.field { display: grid; gap: 4px; padding: 10px 14px; transition: background .15s; }
+.field label, .lbl { font-size: .75rem; color: var(--ink-2); font-weight: 500; }
 .field input, .field textarea, .field select { border: 0; background: transparent; padding: 2px 0; width: 100%; resize: vertical; outline: none; }
+.field input::placeholder, .field textarea::placeholder { color: var(--ink-2); opacity: .75; }
 .field textarea { min-height: 2.6em; }
-.field:focus-within { background: color-mix(in srgb, var(--accent) 6%, transparent); }
-.btn-row { display: flex; flex-wrap: wrap; gap: 8px; padding: 12px 14px; }
-.btn { border: 1px solid var(--line); background: var(--surface); padding: 9px 14px; border-radius: 10px; font-weight: 600; font-size: .88rem; display: inline-flex; align-items: center; gap: 6px; }
-.btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.field:focus-within { background: color-mix(in oklch, var(--action-soft) 50%, transparent); }
+.btn { border: 1px solid var(--line); background: var(--surface); padding: 9px 14px; border-radius: 10px; font-weight: 600; font-size: .88rem; display: inline-flex; align-items: center; gap: 6px; transition: transform .12s var(--ease-out), filter .15s; }
+.btn:active { transform: scale(.97); }
+.btn.primary { background: var(--action); color: var(--on-action); border-color: var(--action); }
+.btn.primary:hover { filter: brightness(1.06); }
 .btn.danger { color: var(--miss); }
+.btn.danger-fill { background: var(--miss); border-color: var(--miss); color: var(--on-state); }
 .btn.block { width: 100%; justify-content: center; }
-.action { width: 100%; border: 0; background: none; text-align: left; padding: 12px 14px; color: var(--accent); font-weight: 600; display: flex; gap: 8px; align-items: center; }
+.action { width: 100%; border: 0; background: none; text-align: left; padding: 12px 14px; color: var(--action); font-weight: 600; display: flex; flex-wrap: wrap; gap: 0 8px; align-items: center; transition: background .15s; }
 .action.danger { color: var(--miss); }
-.action { flex-wrap: wrap; row-gap: 0; }
-.action small { flex-basis: 100%; font-size: .8rem; color: var(--muted); font-weight: 400; }
+.action small { flex-basis: 100%; color: var(--ink-2); font-weight: 400; font-size: .8rem; }
 
 .levels { display: flex; gap: 4px; }
-.levels i { flex: 1; height: 6px; border-radius: 99px; background: var(--surface-2); }
-.levels i.on { background: var(--accent); }
+.levels i { flex: 1; height: 6px; border-radius: 99px; background: var(--well); transition: background .3s; }
+.levels i.on { background: var(--action); }
 .chips { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 2px; }
-.chip { border: 1px solid var(--line); background: var(--surface); border-radius: 99px; padding: 5px 12px; font-size: .82rem; white-space: nowrap; }
-.chip.on { background: var(--ink); color: var(--bg); border-color: var(--ink); }
-.empty { padding: 28px 18px; text-align: center; display: grid; gap: 10px; justify-items: center; color: var(--muted); }
+.chip { border: 1px solid var(--line); background: var(--surface); border-radius: 99px; padding: 5px 12px; font-size: .82rem; white-space: nowrap; transition: background .18s, color .18s; }
+.chip.on { background: var(--shell); color: var(--on-shell); border-color: var(--shell); }
+.empty { padding: 28px 18px; text-align: center; display: grid; gap: 10px; justify-items: center; color: var(--ink-2); }
 .empty h3 { font: 700 1.15rem var(--font-display); color: var(--ink); margin: 0; }
 
-.tabs { position: sticky; bottom: 0; z-index: 5; display: grid; grid-template-columns: repeat(4, 1fr); background: var(--surface); border-top: 1px solid var(--line); padding: 6px 4px calc(6px + env(safe-area-inset-bottom, 0px)); }
-.tabs button { border: 0; background: none; display: grid; justify-items: center; gap: 2px; font-size: .68rem; font-weight: 500; color: var(--muted); padding: 4px 0; }
-.tabs button.on { color: var(--accent); }
+.tabs { position: sticky; bottom: 0; z-index: 5; display: grid; grid-template-columns: repeat(4, 1fr); background: var(--surface); border-top: 1px solid var(--line); padding: 6px 4px calc(6px + env(safe-area-inset-bottom, 0px)); view-transition-name: tabs; }
+.tabs button { border: 0; background: none; display: grid; justify-items: center; gap: 2px; font-size: .68rem; font-weight: 500; color: var(--ink-2); padding: 4px 0; position: relative; transition: color .18s; }
+.tabs button.on { color: var(--action); }
+.tabs button.on::after { content: ""; position: absolute; top: -6px; width: 22px; height: 3px; border-radius: 0 0 3px 3px; background: var(--action); }
 
-.scrim { position: fixed; inset: 0; background: var(--scrim); z-index: 20; display: flex; align-items: flex-end; justify-content: center; }
-.sheet { background: var(--bg); width: 100%; max-width: 460px; max-height: 88%; overflow-y: auto; border-radius: 18px 18px 0 0; padding: 8px 16px calc(18px + env(safe-area-inset-bottom, 0px)); display: grid; gap: 14px; animation: up .22s ease-out; }
+/* Sheets: enter on a long deceleration, exit faster */
+.scrim { position: fixed; inset: 0; background: var(--scrim); z-index: 20; display: flex; align-items: flex-end; justify-content: center; animation: fade .22s ease-out; }
+.sheet { background: var(--canvas); width: 100%; max-width: 460px; max-height: 88%; overflow-y: auto; border-radius: 18px 18px 0 0; padding: 8px 16px calc(18px + env(safe-area-inset-bottom, 0px)); display: grid; gap: 14px; animation: sheet-in .42s var(--ease-out); box-shadow: 0 -10px 40px oklch(0 0 0 / 0.18); }
+.scrim.closing { animation: fade .18s ease-in reverse forwards; }
+.scrim.closing .sheet { animation: sheet-out .18s var(--ease-in) forwards; }
+@keyframes fade { from { opacity: 0; } }
+@keyframes sheet-in { from { transform: translateY(100%); } }
+@keyframes sheet-out { to { transform: translateY(100%); } }
 .sheet .grab { width: 36px; height: 5px; border-radius: 99px; background: var(--line); margin: 2px auto 0; }
 .sheet-head { display: flex; align-items: center; gap: 8px; }
 .sheet-head h3 { flex: 1; margin: 0; font: 700 1.15rem var(--font-display); text-align: center; }
-.sheet-head button { border: 0; background: none; color: var(--accent); font-weight: 600; min-width: 60px; }
+.sheet-head button { border: 0; background: none; color: var(--action); font-weight: 600; min-width: 60px; }
 .sheet-head button:first-child { text-align: left; font-weight: 400; }
 .sheet-head button:last-child { text-align: right; }
-.sheet-head button:disabled { color: var(--muted); opacity: .6; cursor: default; }
-@keyframes up { from { transform: translateY(30px); opacity: .4; } }
-@media (prefers-reduced-motion: reduce) { .sheet { animation: none; } .bar > i, .log { transition: none; } }
-.reason { display: flex; gap: 12px; align-items: center; width: 100%; border: 0; background: none; text-align: left; padding: 12px 14px; }
+.sheet-head button:disabled { color: var(--ink-2); opacity: .6; cursor: default; }
+.reason { display: flex; gap: 12px; align-items: center; width: 100%; border: 0; background: none; text-align: left; padding: 12px 14px; transition: background .15s; }
+.reason .tag { width: 34px; height: 34px; border-radius: 10px; flex: none; display: grid; place-items: center; background: var(--miss-soft); color: var(--miss); font: 700 .8rem var(--font-mono); }
 .reason b { display: block; }
-.reason span { color: var(--muted); font-size: .82rem; }
+.reason span { color: var(--ink-2); font-size: .82rem; }
 .check { display: flex; gap: 8px; align-items: center; padding: 8px 14px; font-size: .88rem; }
 .check .ok { color: var(--done); }
-.check .no { color: var(--muted); }
-.check em { margin-left: auto; font-style: normal; font-size: .75rem; color: var(--muted); }
+.check .no { color: var(--ink-2); }
+.check em { margin-left: auto; font-style: normal; font-size: .75rem; color: var(--ink-2); }
 .stepper { display: flex; align-items: center; gap: 10px; padding: 10px 14px; }
 .stepper b { flex: 1; font-weight: 500; }
-.stepper button { width: 34px; height: 30px; border: 1px solid var(--line); background: var(--surface); border-radius: 8px; }
+.stepper button { width: 34px; height: 30px; border: 1px solid var(--line); background: var(--surface); border-radius: 8px; transition: transform .12s var(--ease-out); }
+.stepper button:active { transform: scale(.92); }
 .inline { display: flex; align-items: baseline; gap: 6px; }
-.inline span { color: var(--muted); white-space: nowrap; }
-pre.json { margin: 0; max-height: 240px; overflow: auto; font: .72rem/1.4 var(--font-mono); padding: 12px; background: var(--surface-2); border-radius: 10px; white-space: pre; }
-.toast { position: fixed; left: 50%; bottom: 84px; transform: translateX(-50%); background: var(--ink); color: var(--bg); padding: 8px 14px; border-radius: 99px; font-size: .85rem; z-index: 30; }
+.inline span { color: var(--ink-2); white-space: nowrap; }
+pre.json { margin: 0; max-height: 240px; overflow: auto; font: .72rem/1.4 var(--font-mono); padding: 12px; background: var(--well); border-radius: 10px; white-space: pre; }
+.toast { position: fixed; left: 50%; bottom: 84px; transform: translateX(-50%); background: var(--shell); color: var(--on-shell); padding: 8px 16px; border-radius: 99px; font-size: .85rem; z-index: 30; box-shadow: var(--shadow); animation: toast-in .32s var(--ease-out); }
+@keyframes toast-in { from { opacity: 0; transform: translate(-50%, 10px); } }
 .guide { padding: 12px 14px; display: grid; gap: 4px; }
 .guide b { font: 700 1rem var(--font-display); }
-.guide p { margin: 0; color: var(--muted); font-size: .88rem; max-width: 60ch; }
+.guide p { margin: 0; color: var(--ink-2); font-size: .88rem; max-width: 60ch; }
+
+/* Screen-to-screen continuity (View Transitions; static fallback where unsupported) */
+::view-transition-old(root) { animation: vt-fade-out .16s ease-in both; }
+::view-transition-new(root) { animation: vt-fade-in .24s var(--ease-out) both; }
+html[data-nav="forward"]::view-transition-old(root) { animation: vt-out-left .18s var(--ease-in) both; }
+html[data-nav="forward"]::view-transition-new(root) { animation: vt-in-right .32s var(--ease-out) both; }
+html[data-nav="back"]::view-transition-old(root) { animation: vt-out-right .18s var(--ease-in) both; }
+html[data-nav="back"]::view-transition-new(root) { animation: vt-in-left .32s var(--ease-out) both; }
+@keyframes vt-fade-out { to { opacity: 0; } }
+@keyframes vt-fade-in { from { opacity: 0; } }
+@keyframes vt-out-left { to { opacity: 0; transform: translateX(-28px); } }
+@keyframes vt-in-right { from { opacity: 0; transform: translateX(36px); } }
+@keyframes vt-out-right { to { opacity: 0; transform: translateX(28px); } }
+@keyframes vt-in-left { from { opacity: 0; transform: translateX(-36px); } }
+
+/* Reduced motion: no spatial movement; colour, opacity and state feedback stay */
+@media (prefers-reduced-motion: reduce) {
+  .sheet, .scrim.closing .sheet { animation: fade .2s ease-out; }
+  .scrim.closing .sheet { animation: fade .15s ease-in reverse forwards; }
+  .cell.just, .toast { animation: fade .2s ease-out; }
+  .log:active, .cell:active, .btn:active, .icon-btn:active { transform: none; }
+  .flask .fill, .flask .surface, .bar > i { transition-duration: .2s; }
+  html[data-nav]::view-transition-old(root), html[data-nav]::view-transition-new(root) { animation-name: vt-fade-out; }
+  html[data-nav]::view-transition-new(root) { animation-name: vt-fade-in; }
+}
 </style>
 
 <div class="app" id="app"></div>
@@ -221,7 +317,8 @@ pre.json { margin: 0; max-height: 240px; overflow: auto; font: .72rem/1.4 var(--
   try { db = JSON.parse(localStorage.getItem(KEY)); } catch (e) { db = null; }
   if (!db || !Array.isArray(db.pacts)) db = seed();
   const save = () => { try { localStorage.setItem(KEY, JSON.stringify(db)); } catch (e) { /* storage unavailable: demo still works in memory */ } };
-  const ui = { tab: "today", stack: [], labFilter: "all", gridMode: "log", persistDays: 14 };
+  const ui = { tab: "today", stack: [], labFilter: "all", gridMode: "log", persistDays: 14, just: null, meterFrom: 34, meterTo: null, pFrom: 0, pTo: null };
+  const reduceMotion = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
   const P = id => db.pacts.find(p => p.id === id);
   const C = id => db.caps.find(c => c.id === id);
 
@@ -266,16 +363,17 @@ pre.json { margin: 0; max-height: 240px; overflow: auto; font: .72rem/1.4 var(--
   const levelBar = lv => `<div class="levels" aria-label="Level ${cap1(lv)}">${LEVELS.map((l, i) => `<i class="${i <= LEVELS.indexOf(lv) ? "on" : ""}"></i>`).join("")}</div>`;
   const summaryRow = p => {
     const n = p.outputs.length;
-    return `<button class="link-row" data-act="open" data-id="${p.id}"><span class="grow"><span class="row-title">${esc(p.action)}</span><span class="row-sub">${fmt(p.start)} · ${pct(rate(p))} · ${doneCount(p)} reps${n ? ` · ${n} outputs` : ""}${p.pivotFrom ? " · pivot" : ""}</span></span>${needsReview(p) ? '<span class="pill warn">Review</span>' : `<span class="pill">${STATUS[p.status]}</span>`}${I.chev}</button>`;
+    return `<button class="link-row" data-act="open" data-id="${p.id}"><span class="grow"><span class="row-title">${esc(p.action)}</span><span class="row-sub">${fmt(p.start)} · ${pct(rate(p))} · ${doneCount(p)} reps${n ? ` · ${n} outputs` : ""}${p.pivotFrom ? " · pivot" : ""}</span></span>${needsReview(p) ? '<span class="pill warn">Review</span>' : `<span class="pill s-${p.status}">${STATUS[p.status]}</span>`}${I.chev}</button>`;
   };
 
   function todayRow(p) {
     const l = p.logs[today()];
     const s = streak(p), fire = s > 0 ? ` · 🔥${s}` : "";
     const sub = p.status === "operationalized" ? `Practice${p.capId && C(p.capId) ? " · " + esc(C(p.capId).name) : ""}${fire}` : `Day ${Math.min(dayNum(p), p.duration)}/${p.duration}${fire} · ${pct(rate(p))}`;
-    return `<div class="row"><button class="row-main" data-act="open" data-id="${p.id}"><span class="row-title">${esc(p.action)}</span><span class="row-sub">${sub}</span></button>
-      <button class="log miss ${l && !l.did ? "on" : ""}" data-act="miss" data-id="${p.id}" aria-label="Didn't do it today">${I.x}</button>
-      <button class="log done ${l?.did ? "on" : ""}" data-act="done" data-id="${p.id}" aria-label="Did it today">${I.check}</button></div>`;
+    const j = ui.just && ui.just.id === p.id && !ui.just.k ? ui.just.kind : "";
+    return `<div class="row ${l ? (l.did ? "logged-done" : "logged-miss") : ""}"><button class="row-main" data-act="open" data-id="${p.id}"><span class="row-title">${esc(p.action)}</span><span class="row-sub">${sub}</span></button>
+      <button class="log miss ${l && !l.did ? "on" : ""} ${j === "miss" ? "just" : ""}" data-act="miss" data-id="${p.id}" aria-label="Didn't do it today">${I.x}</button>
+      <button class="log done ${l?.did ? "on" : ""} ${j === "done" ? "just" : ""}" data-act="done" data-id="${p.id}" aria-label="Did it today">${I.check}</button></div>`;
   }
 
   function viewToday() {
@@ -287,9 +385,13 @@ pre.json { margin: 0; max-height: 240px; overflow: auto; font: .72rem/1.4 var(--
     const loggable = [...running, ...practices];
     const logged = loggable.filter(p => p.logs[today()]).length;
     const dateLbl = new Date().toLocaleDateString(undefined, { weekday: "long", month: "short", day: "numeric" });
-    let h = top("Today", plusBtn("newPact"), dateLbl) + "<main>";
+    const lvl = loggable.length ? logged / loggable.length : 0;
+    ui.meterTo = 34 - lvl * 31; ui.pTo = lvl;
+    const flaskPath = "M11 3h8v11l9 17.5a2 2 0 0 1-1.8 2.5H3.8A2 2 0 0 1 2 31.5L11 14z";
+    const meter = loggable.length ? `<div class="meter" role="img" aria-label="${logged} of ${loggable.length} logged today"><svg class="flask ${lvl === 1 ? "full" : ""}" id="flask" viewBox="0 0 30 36" aria-hidden="true" style="--lvl-y:${ui.meterFrom}px"><defs><clipPath id="flask-in"><path d="${flaskPath}"/></clipPath></defs><g clip-path="url(#flask-in)"><rect class="fill" x="0" y="0" width="30" height="40"/><path class="surface" d="M0 .6Q7.5-1.4 15 .6T30 .6"/></g><path class="glass" d="${flaskPath}"/><path class="glass" d="M8.5 3h13"/></svg><span><b>${logged}</b>/${loggable.length}</span></div>` : "";
+    let h = top("Today", meter + plusBtn("newPact"), dateLbl) + "<main>";
     h += `<p class="demo-note">Web demo of the Tiny Lab iOS app with sample pacts. Tap ✓ or ✕ to log today. Changes stay in this browser; reset them in Settings.</p>`;
-    if (loggable.length) h += `<div class="group"><div class="progress"><span><b>${logged} of ${loggable.length}</b> logged today</span><div class="bar"><i style="width:${loggable.length ? (logged / loggable.length) * 100 : 0}%"></i></div></div></div>`;
+    if (loggable.length) h += `<div class="group"><div class="progress"><span><b>${logged} of ${loggable.length}</b> logged today</span><div class="bar"><i id="pbar" style="--p:${ui.pFrom}"></i></div></div></div>`;
     if (review.length) h += `<section><h2>Pact finished · persist, pause or pivot?</h2><div class="group">${review.map(summaryRow).join("")}</div></section>`;
     if (running.length) h += `<section><h2>Experiments</h2><div class="group">${running.map(todayRow).join("")}</div></section>`;
     if (practices.length) h += `<section><h2>Practices</h2><div class="group">${practices.map(todayRow).join("")}</div><p class="foot">Operationalized pacts. No end date, still logged daily.</p></section>`;
@@ -316,10 +418,10 @@ pre.json { margin: 0; max-height: 240px; overflow: auto; font: .72rem/1.4 var(--
     const cap = p.capId && C(p.capId);
     const dateLine = p.status === "operationalized" ? `Started ${fmt(p.start)} · practice since ${fmt(p.opAt || today())}` : `${fmt(p.start)} → ${fmt(endKey(p))}`;
     let h = top("", `<button class="icon-btn" data-act="pactMenu" data-id="${p.id}" aria-label="More">···</button>`) + "<main>";
-    h += `<div class="group hero"><div><span class="pill">${STATUS[p.status]}</span></div><h3>${esc(title(p))}</h3>${p.question ? `<div class="q">${esc(p.question)}</div>` : ""}<div class="meta">${dateLine}</div>${cap ? `<div class="meta">Builds: ${esc(cap.name)}</div>` : ""}${p.status === "operationalized" && p.routine ? `<div class="meta">↻ ${esc(p.routine)}</div>` : ""}</div>`;
+    h += `<div class="group hero"><div><span class="pill s-${p.status}">${STATUS[p.status]}</span></div><h3>${esc(title(p))}</h3>${p.question ? `<div class="q">${esc(p.question)}</div>` : ""}<div class="meta">${dateLine}</div>${cap ? `<div class="meta">Builds: ${esc(cap.name)}</div>` : ""}${p.status === "operationalized" && p.routine ? `<div class="meta">↻ ${esc(p.routine)}</div>` : ""}</div>`;
     h += `<div class="group"><div class="stats"><div class="stat"><b>${doneCount(p)}/${tracked(p)}</b><span>done</span></div><div class="stat"><b>${pct(rate(p))}</b><span>hit rate</span></div><div class="stat"><b>${streak(p)}</b><span>streak</span></div><div class="stat"><b>${best(p)}</b><span>best</span></div>${p.metric ? `<div class="stat"><b>${metricTotal(p)}</b><span>${esc(p.metric)}</span></div>` : ""}</div></div>`;
     const t = today();
-    h += `<section><h2>Log</h2><div class="group"><div class="pad" style="padding-bottom:0"><div class="seg"><button class="${ui.gridMode === "log" ? "on" : ""}" data-act="gridMode" data-v="log">Tap to log</button><button class="${ui.gridMode === "note" ? "on" : ""}" data-act="gridMode" data-v="note">Tap to add note</button></div></div><div class="grid">${gridDays(p).map(k => { const l = p.logs[k]; const fut = k > t; return `<button class="cell ${l ? (l.did ? "d" : "m") : ""} ${k === t ? "today" : ""} ${fut ? "future" : ""}" data-act="cell" data-id="${p.id}" data-k="${k}" ${fut ? "disabled" : ""} aria-label="${fmt(k)}${l ? (l.did ? " done" : " missed") : ""}">${parse(k).getDate()}${l?.note ? '<span class="dot"></span>' : ""}</button>`; }).join("")}</div></div><p class="foot">${ui.gridMode === "log" ? "Tap a day: done → missed → clear." : "Tap a day to add a field note or a value."}</p></section>`;
+    h += `<section><h2>Log</h2><div class="group"><div class="pad" style="padding-bottom:0"><div class="seg"><button class="${ui.gridMode === "log" ? "on" : ""}" data-act="gridMode" data-v="log">Tap to log</button><button class="${ui.gridMode === "note" ? "on" : ""}" data-act="gridMode" data-v="note">Tap to add note</button></div></div><div class="grid">${gridDays(p).map(k => { const l = p.logs[k]; const fut = k > t; return `<button class="cell ${l ? (l.did ? "d" : "m") : ""} ${ui.just && ui.just.k === k ? "just" : ""} ${k === t ? "today" : ""} ${fut ? "future" : ""}" data-act="cell" data-id="${p.id}" data-k="${k}" ${fut ? "disabled" : ""} aria-label="${fmt(k)}${l ? (l.did ? " done" : " missed") : ""}">${parse(k).getDate()}${l?.note ? '<span class="dot"></span>' : ""}</button>`; }).join("")}</div></div><p class="foot">${ui.gridMode === "log" ? "Tap a day: done → missed → clear." : "Tap a day to add a field note or a value."}</p></section>`;
     const rc = reasonCounts(p);
     if (rc.length) {
       const topR = rc.reduce((a, b) => (b[1] > a[1] ? b : a))[0];
@@ -353,7 +455,7 @@ pre.json { margin: 0; max-height: 240px; overflow: auto; font: .72rem/1.4 var(--
   function viewCap(c) {
     const ps = capPacts(c), pr = ps.filter(p => p.status === "operationalized"), ex = ps.filter(p => p.status !== "operationalized");
     const outs = ps.flatMap(p => p.outputs).sort((a, b) => b.date.localeCompare(a.date));
-    let h = top("", `<button class="icon-btn" data-act="delCap" data-id="${c.id}" aria-label="Delete capability" style="color:var(--miss)">${I.x}</button>`) + "<main>";
+    let h = top("", `<button class="icon-btn" data-act="delCap" data-id="${c.id}" aria-label="Delete capability">${I.x}</button>`) + "<main>";
     h += `<div class="group"><div class="field"><label for="cap-name">Capability</label><input id="cap-name" data-cbind="name" data-id="${c.id}" value="${esc(c.name)}" style="font:700 1.25rem var(--font-display)"></div><div class="pad" style="display:grid;gap:8px"><div class="seg">${LEVELS.map(l => `<button class="${c.level === l ? "on" : ""}" data-act="level" data-id="${c.id}" data-v="${l}">${cap1(l)}</button>`).join("")}</div>${levelBar(c.level)}</div></div>`;
     h += `<section><h2>Program</h2><div class="group"><div class="field"><label for="cap-why">Why this matters to me</label><textarea id="cap-why" rows="2" data-cbind="why" data-id="${c.id}">${esc(c.why)}</textarea></div><div class="field"><label for="cap-target">What good looks like</label><textarea id="cap-target" rows="2" data-cbind="target" data-id="${c.id}">${esc(c.target)}</textarea></div></div></section>`;
     h += `<section><h2>Evidence</h2><div class="group"><div class="stats"><div class="stat"><b>${ex.length}</b><span>experiments</span></div><div class="stat"><b>${pr.length}</b><span>practices</span></div><div class="stat"><b>${ps.reduce((s, p) => s + doneCount(p), 0)}</b><span>reps</span></div><div class="stat"><b>${outs.filter(o => o.op).length}/${outs.length}</b><span>outputs in use</span></div></div></div></section>`;
@@ -392,8 +494,24 @@ pre.json { margin: 0; max-height: 240px; overflow: auto; font: .72rem/1.4 var(--
     else if (v?.type === "cap" && C(v.id)) body = viewCap(C(v.id));
     else { ui.stack = []; body = { today: viewToday, lab: viewLab, caps: viewCaps, settings: viewSettings }[ui.tab](); }
     $app.innerHTML = body + tabs();
+    ui.just = null;
+    const flask = document.getElementById("flask"), pbar = document.getElementById("pbar");
+    if (!flask) { ui.meterFrom = 34; ui.pFrom = 0; return; }
+    const to = ui.meterTo, pTo = ui.pTo;
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      flask.style.setProperty("--lvl-y", to + "px");
+      if (pbar) pbar.style.setProperty("--p", pTo);
+      ui.meterFrom = to; ui.pFrom = pTo;
+    }));
   }
-  const go = v => { ui.stack.push(v); render(); window.scrollTo(0, 0); };
+  // Screen changes: slide forward/back, crossfade between tabs.
+  function transition(dir, update) {
+    if (!document.startViewTransition || reduceMotion()) { update(); return; }
+    document.documentElement.dataset.nav = dir;
+    const t = document.startViewTransition(update);
+    t.finished.finally(() => { delete document.documentElement.dataset.nav; });
+  }
+  const go = v => transition("forward", () => { ui.stack.push(v); render(); window.scrollTo(0, 0); });
 
   // ---------- sheets ----------
   const $ov = document.getElementById("overlay");
@@ -403,7 +521,12 @@ pre.json { margin: 0; max-height: 240px; overflow: auto; font: .72rem/1.4 var(--
     const first = $ov.querySelector("input:not([type=radio]):not([type=hidden]), textarea");
     if (first && form) setTimeout(() => first.focus({ preventScroll: true }), 50);
   }
-  const close = () => { $ov.hidden = true; $ov.innerHTML = ""; };
+  const close = () => {
+    const s = $ov.querySelector(".scrim");
+    if (!s || s.classList.contains("closing")) return;
+    s.classList.add("closing");
+    setTimeout(() => { if ($ov.contains(s)) { $ov.hidden = true; $ov.innerHTML = ""; } }, reduceMotion() ? 150 : 180);
+  };
   let toastTimer;
   const toast = msg => { const t = document.getElementById("toast"); t.textContent = msg; t.hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(() => (t.hidden = true), 1800); };
 
@@ -479,24 +602,24 @@ pre.json { margin: 0; max-height: 240px; overflow: auto; font: .72rem/1.4 var(--
   }
 
   function confirmSheet(titleText, msg, act, id, label) {
-    sheet(titleText, `<p style="margin:0;text-align:center;color:var(--muted)">${msg}</p><button type="button" class="btn primary block" data-act="${act}" data-id="${id || ""}" style="background:var(--miss);border-color:var(--miss);color:#fff">${label}</button>`);
+    sheet(titleText, `<p style="margin:0;text-align:center;color:var(--ink-2)">${msg}</p><button type="button" class="btn danger-fill block" data-act="${act}" data-id="${id || ""}">${label}</button>`);
   }
 
   // ---------- actions ----------
   const A = {
-    tab: el => { ui.tab = el.dataset.v; ui.stack = []; render(); window.scrollTo(0, 0); },
-    back: () => { ui.stack.pop(); render(); },
+    tab: el => { if (ui.tab === el.dataset.v && !ui.stack.length) return; transition("tab", () => { ui.tab = el.dataset.v; ui.stack = []; render(); window.scrollTo(0, 0); }); },
+    back: () => transition("back", () => { ui.stack.pop(); render(); }),
     open: el => go({ type: "pact", id: el.dataset.id }),
     openCap: el => go({ type: "cap", id: el.dataset.id }),
     labFilter: el => { ui.labFilter = el.dataset.v; render(); },
     done: el => {
       const p = P(el.dataset.id), l = p.logs[today()];
-      if (l?.did) clearLog(p, today()); else { setLog(p, today(), true); if (p.metric) { render(); return logSheet(p, today()); } }
+      if (l?.did) clearLog(p, today()); else { setLog(p, today(), true); ui.just = { id: p.id, kind: "done" }; if (p.metric) { render(); return logSheet(p, today()); } }
       render();
     },
     miss: el => {
       const p = P(el.dataset.id), l = p.logs[today()];
-      if (l && !l.did) { clearLog(p, today()); render(); } else { setLog(p, today(), false); render(); reasonSheet(p); }
+      if (l && !l.did) { clearLog(p, today()); render(); } else { setLog(p, today(), false); ui.just = { id: p.id, kind: "miss" }; render(); reasonSheet(p); }
     },
     reason: el => { const p = P(el.dataset.id); if (p.logs[today()]) p.logs[today()].reason = el.dataset.v; save(); close(); render(); },
     gridMode: el => { ui.gridMode = el.dataset.v; render(); },
@@ -505,6 +628,7 @@ pre.json { margin: 0; max-height: 240px; overflow: auto; font: .72rem/1.4 var(--
       if (ui.gridMode === "note") return logSheet(p, k);
       const l = p.logs[k];
       if (!l) setLog(p, k, true); else if (l.did) setLog(p, k, false); else clearLog(p, k);
+      ui.just = { id: p.id, k };
       render();
     },
     logDid: el => {
