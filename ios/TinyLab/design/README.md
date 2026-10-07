@@ -41,6 +41,33 @@ The web demo also draws a **growth path** diagram (experiments → practices →
 capabilities, with live counts) from the same icons. See `growthPath()` in the
 demo.
 
+## Sketch and ink
+
+An experiment hasn't proven anything yet, so it is drawn as a **pencil sketch**.
+Once a pact is proven (operationalized into a practice), it is redrawn in
+**clean ink**. Capabilities are always drawn in ink, as a crest.
+
+| State | Drawing | What the drawing encodes |
+| --- | --- | --- |
+| Experiment (running, paused, done) | scribble flask on paper | liquid level = hit rate, bubbles = streak (up to 3), steadier line = more of the pact has run |
+| Practice (operationalized) | clean ink flask with a tick | liquid level = hit rate |
+| Capability | ink crest: four arcs around the staircase mark | arcs drawn = level (Exploring, Practicing, Proficient, Teaching) |
+
+`art.js` generates all three as plain SVG, with seeded randomness so a pact's
+sketch stays the same between visits. The sketch technique is adapted from
+[claudedraw](https://github.com/Griffin2/claudedraw) by Griffin2 (MIT): an
+Ornstein-Uhlenbeck wobble on outlines, 45° looping scribble fills that bleed past
+the edge, and feTurbulence grain. The sketch keeps claudedraw's fixed ink and
+palette colours, so it looks the same in both themes. Ink drawings use the app's
+colour tokens.
+
+```
+node ios/TinyLab/design/build_art.cjs
+```
+
+That command writes the samples in `illustrations/` (standalone SVGs with their
+own paper and colours) and inlines `art.js` into the web demo.
+
 ## Motion
 
 Motion confirms what you did or shows that something changed state. Nothing
@@ -48,8 +75,10 @@ plays just for decoration, and nothing makes you wait.
 
 | Moment | What moves | Why |
 | --- | --- | --- |
-| **Signature: flask meter** | the Today header flask fills to today's logged share (0.9s, expo out) | the one authored moment; it ties the app icon to your day |
+| **Signature: re-inking** | on Operationalize, the sketch blurs off the paper, the ink outline draws on, the liquid pours in and the tick lands last (about 1.6s) | marks the moment an experiment becomes a proven practice |
+| Flask meter | the Today header flask fills to today's logged share (0.9s, expo out) | the one authored moment; it ties the app icon to your day |
 | Log check / cross | the button fills from the bottom like liquid, then the tick or cross draws on | confirms the tap in place |
+| Capability level up | the crest arcs draw on | shows the new level |
 | Streak grows | the newest cell of the streak icon scales in | shows that the log extended the streak |
 | PACT check met | the circle settles and the tick draws, only when a criterion flips to met | feedback without replaying on every keystroke |
 | Grid day tap | the cell settles from 82% scale | confirms the change on a small target |
