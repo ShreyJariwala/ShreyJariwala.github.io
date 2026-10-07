@@ -291,6 +291,8 @@ struct OperationalizeSheet: View {
         let name = newCapabilityName.trimmingCharacters(in: .whitespacesAndNewlines)
         if !name.isEmpty {
             let created = Capability(name: name)
+            created.question = pact.question
+            created.askedAt = min(pact.startDate, .now)
             context.insert(created)
             target = created
         }

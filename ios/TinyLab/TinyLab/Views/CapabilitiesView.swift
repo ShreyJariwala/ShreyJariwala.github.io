@@ -74,6 +74,10 @@ struct CapabilityDetailView: View {
     @Bindable var capability: Capability
     @State private var startingExperiment = false
 
+    private var askedAt: Binding<Date> {
+        Binding(get: { capability.questionDate }, set: { capability.askedAt = $0 })
+    }
+
     var body: some View {
         List {
             Section {
@@ -83,6 +87,30 @@ struct CapabilityDetailView: View {
                     ForEach(CapabilityLevel.allCases) { l in Text(l.label).tag(l.rawValue) }
                 }
                 LevelBar(level: capability.level)
+            }
+
+            Section {
+                let headline = capability.bridgeHeadline
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("\(headline.days) \(headline.days == 1 ? "day" : "days")")
+                        .font(.title.weight(.bold))
+                        .foregroundStyle(.tint)
+                        .monospacedDigit()
+                    Text(headline.caption)
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
+                TextField("The question that started it", text: $capability.question, axis: .vertical)
+                DatePicker("First asked", selection: askedAt, in: ...Date.now, displayedComponents: .date)
+                ForEach(capability.milestones) { m in
+                    LabeledContent(m.label) {
+                        Text(m.date.map { "\($0.formatted(.dateTime.month().day())) · day \(capability.day(of: $0))" } ?? "not yet")
+                            .monospacedDigit()
+                    }
+                    .foregroundStyle(m.date == nil ? .secondary : .primary)
+                }
+            } header: {
+                Text("Question to capability")
             }
 
             Section("Program") {
@@ -136,6 +164,7 @@ struct CapabilityDetailView: View {
         }
         .navigationTitle(capability.name.isEmpty ? "Capability" : capability.name)
         .navigationBarTitleDisplayMode(.inline)
+        .onChange(of: capability.levelRaw) { _, _ in capability.stampLevelDates() }
         .sheet(isPresented: $startingExperiment) { PactEditorView(mode: .new(capability)) }
     }
 }
@@ -147,11 +176,15 @@ struct NewCapabilityView: View {
     @State private var why = ""
     @State private var target = ""
     @State private var level: CapabilityLevel = .exploring
+    @State private var question = ""
+    @State private var askedAt = Date.now
 
     var body: some View {
         NavigationStack {
             Form {
                 TextField("Capability, e.g. Data storytelling", text: $name)
+                TextField("The question that started it", text: $question, axis: .vertical)
+                DatePicker("First asked", selection: $askedAt, in: ...Date.now, displayedComponents: .date)
                 TextField("Why it matters", text: $why, axis: .vertical)
                 TextField("What good looks like", text: $target, axis: .vertical)
                 Picker("Current level", selection: $level) {
@@ -167,6 +200,9 @@ struct NewCapabilityView: View {
                         let c = Capability(name: name.trimmingCharacters(in: .whitespaces), why: why)
                         c.target = target
                         c.level = level
+                        c.question = question.trimmingCharacters(in: .whitespacesAndNewlines)
+                        c.askedAt = askedAt
+                        c.stampLevelDates()
                         context.insert(c)
                         dismiss()
                     }

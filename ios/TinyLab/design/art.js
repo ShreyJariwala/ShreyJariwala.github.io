@@ -211,5 +211,58 @@
       `<path class="ink-line draw" pathLength="1" d="M.61 .38V.27L.7 .305 .61 .34" stroke-width="${sw * 0.7}"/></svg>`;
   }
 
-  root.TinyLabArt = { sketch, ink, crest, grainFilter };
+  const BRIDGE_STYLE = `<style>.br-bank{fill:rgb(226,234,233)}.br-water{fill:none;stroke:rgb(196,222,224);stroke-width:2;stroke-linecap:round}.br-hatch path{fill:none;stroke:rgb(50,160,160);stroke-width:2.6;stroke-linecap:round;opacity:.75}.br-sketch{fill:none;stroke:rgb(13,13,13);stroke-width:1.6;stroke-linecap:round}.br-sketch.thick{stroke-width:2.6}.br-ink-deck{fill:rgb(15,104,116)}.br-ink-line{fill:none;stroke:rgb(15,104,116);stroke-width:2.6;stroke-linecap:round}.br-todo{fill:none;stroke:rgb(120,140,142);stroke-width:1.4;stroke-dasharray:3 4}.br-pin{fill:rgb(255,255,255);stroke:rgb(13,13,13);stroke-width:1.4}.br-pin.ink{stroke:rgb(15,104,116);fill:rgb(15,104,116)}.br-num{font:600 9px ui-monospace,monospace;fill:rgb(13,13,13)}.br-pin.ink+.br-num{fill:rgb(255,255,255)}.br-today{stroke:rgb(208,73,63);stroke-width:1.6;stroke-linecap:round}.br-axis{font:500 9px ui-monospace,monospace;fill:rgb(80,100,104)}.br-sign{fill:rgb(255,255,255);stroke:rgb(13,13,13);stroke-width:1.4}.br-sign-q{font:700 13px sans-serif;fill:rgb(13,13,13)}.crest-track{fill:none;stroke:rgb(214,226,226);stroke-linecap:round}.crest-on{fill:none;stroke:rgb(15,104,116);stroke-linecap:round}.ink-line{fill:none;stroke:rgb(15,104,116);stroke-linecap:round;stroke-linejoin:round}</style>`;
+
+  /** The bridge from a question to a capability, drawn to a day scale.
+      Exploring stretch = sketch, proven stretch = ink, the rest = dashed outline.
+      days: { today, proven|null, end|null (capability reached Teaching) }
+      milestones: [{ day, n }]   spans: [{ from, to, proven }] (one per pact, max 4 drawn) */
+  function bridge({ seed = "bridge", today = 0, proven = null, end = null, level = 0, milestones = [], spans = [], standalone = false } = {}) {
+    const W = 360, H = 150, x0 = 40, x1 = 320, deckY = 66, r = rng(seed);
+    const complete = end != null;
+    const total = complete ? Math.max(end, 1) : Math.max(today * 1.35 + 3, 6);
+    const X = d => x0 + Math.max(0, Math.min(1, d / total)) * (x1 - x0);
+    const xt = X(today), xp = proven == null ? xt : X(Math.min(proven, today));
+    const wl = (a, b, s) => toD(wobble(sample([["L", a, b]], 4), s, r, false));
+    let g = "";
+    g += `<path class="br-water" d="M0 132Q22.5 127 45 132T90 132T135 132T180 132T225 132T270 132T315 132T360 132"/>`;
+    g += `<path class="br-bank" d="M0 ${deckY + 4}H${x0 + 2}Q${x0 + 6} ${deckY + 6} ${x0 - 2} ${deckY + 36}Q${x0 - 10} ${deckY + 60} ${x0 - 18} 136H0Z"/>`;
+    g += `<path class="br-bank" d="M${W} ${deckY + 4}H${x1 - 2}Q${x1 - 6} ${deckY + 6} ${x1 + 2} ${deckY + 36}Q${x1 + 10} ${deckY + 60} ${x1 + 18} 136H${W}Z"/>`;
+    // Left bank: the question sign. Right bank: the capability crest.
+    g += `<path class="br-sketch" d="${wl([18, deckY + 4], [18, 44], 0.6)}"/><circle class="br-sign" cx="18" cy="34" r="11"/><text class="br-sign-q" x="18" y="38.5" text-anchor="middle">?</text>`;
+    g += crest({ level, size: "sm" }).replace("<svg ", `<svg x="${x1 + 4}" y="${deckY - 40}" width="34" height="34" `);
+    let built = "";
+    if (xp > x0 + 0.5) {
+      const poly = [[x0, deckY - 4], [xp, deckY - 4], [xp, deckY + 4], [x0, deckY + 4]];
+      built += `<g class="br-hatch">${scan(poly, 4.5, 1, r).map(([a, b]) => `<path d="${scribble(a, b, 3, 1.4, 22, r)}"/>`).join("")}</g>`;
+      built += `<path class="br-sketch" d="${wl([x0, deckY - 4], [xp, deckY - 4], 1)}"/><path class="br-sketch" d="${wl([x0, deckY + 4], [xp, deckY + 4], 1)}"/>`;
+    }
+    if (proven != null && xt > xp + 0.5) built += `<rect class="br-ink-deck" x="${n4(xp)}" y="${deckY - 4}" width="${n4(xt - xp)}" height="8" rx="2"/>`;
+    // Piers: one per pact, hanging under the deck for the days it ran.
+    spans.slice(0, 4).forEach((s, i) => {
+      const y = deckY + 20 + i * 10, a = X(s.from), b = Math.max(a + 3, X(Math.min(s.to, today)));
+      built += s.proven
+        ? `<path class="br-ink-line" d="M${n4(a)} ${deckY + 4}V${y}M${n4(a)} ${y}H${n4(b)}"/>`
+        : `<path class="br-sketch" d="${wl([a, deckY + 4], [a, y], 0.5)}"/><path class="br-sketch thick" d="${wl([a, y], [b, y], 0.8)}"/>`;
+    });
+    // Towers at milestones; neighbours closer than 20px alternate height so the pins don't collide.
+    let lastX = -99, alt = false;
+    milestones.forEach(m => {
+      const x = X(m.day), isInk = proven != null && m.day >= proven;
+      alt = x - lastX < 20 ? !alt : false; lastX = x;
+      const top = alt ? 40 : 22, cy = top - 8;
+      built += isInk ? `<path class="br-ink-line" d="M${n4(x)} ${deckY - 4}V${top}"/>` : `<path class="br-sketch" d="${wl([x, deckY - 4], [x, top], 0.7)}"/>`;
+      built += `<circle class="br-pin ${isInk ? "ink" : ""}" cx="${n4(x)}" cy="${cy}" r="8"/><text class="br-num" x="${n4(x)}" y="${cy + 3.2}" text-anchor="middle">${m.n}</text>`;
+    });
+    g += `<g class="br-built">${built}</g>`;
+    if (!complete && x1 > xt + 1) g += `<rect class="br-todo" x="${n4(xt)}" y="${deckY - 4}" width="${n4(x1 - xt)}" height="8" rx="2"/>`;
+    if (!complete) g += `<path class="br-today" d="M${n4(xt)} ${deckY - 13}V${deckY + 13}"/>`;
+    const tAnchor = xt > x1 - 30 ? "end" : xt < x0 + 30 ? "start" : "middle";
+    g += `<text class="br-axis" x="${x0}" y="146">day 0</text>`;
+    g += complete ? `<text class="br-axis" x="${x1}" y="146" text-anchor="end">day ${end}</text>` : `<text class="br-axis" x="${n4(xt)}" y="146" text-anchor="${tAnchor}">today · day ${today}</text>`;
+    return `<svg class="art-svg bridge-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" aria-hidden="true">` +
+      (standalone ? BRIDGE_STYLE + `<rect width="${W}" height="${H}" fill="rgb(255,255,255)"/>` : "") + g + `</svg>`;
+  }
+
+  root.TinyLabArt = { sketch, ink, crest, bridge, grainFilter };
 })(typeof window !== "undefined" ? window : globalThis);

@@ -60,6 +60,11 @@ What I added beyond the book:
   Teaching), a *why*, a *what good looks like*, and evidence (experiments,
   practices, reps, outputs in use). From a capability you can start a new
   experiment aimed at it.
+- **Question to capability**: each capability records the question that started
+  it and when you first asked it. It also records the date of each milestone:
+  first experiment, first proof, and each level reached. The capability screen
+  shows how many days it took you to absorb the topic. The web demo draws this
+  as a bridge from the question to the capability.
 
 ```
 experiment (pact) ──review──▶ persist / pause / pivot

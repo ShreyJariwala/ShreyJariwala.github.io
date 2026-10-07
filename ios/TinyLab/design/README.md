@@ -53,7 +53,27 @@ Once a pact is proven (operationalized into a practice), it is redrawn in
 | Practice (operationalized) | clean ink flask with a tick | liquid level = hit rate |
 | Capability | ink crest: four arcs around the staircase mark | arcs drawn = level (Exploring, Practicing, Proficient, Teaching) |
 
-`art.js` generates all three as plain SVG, with seeded randomness so a pact's
+### The bridge: question to capability
+
+Each capability page draws a bridge from the day the question was first asked
+(the left bank, a "?" sign) to the capability (the right bank, its crest). It is
+drawn to a day scale:
+
+- **Numbered towers** mark the milestones in order: question asked, first
+  experiment, first practice, then each level reached. Pins that would collide
+  alternate heights.
+- **The deck** is sketched (hatching, wobbly rails) while you were exploring.
+  It is solid ink from the first proven practice to today, and a dashed
+  outline for what isn't built yet. A red tick marks today. At Teaching, the
+  deck reaches the far bank.
+- **Piers** hang under the deck, one per pact, spanning the days it ran:
+  sketched for experiments, ink for practices.
+
+The headline above it is the number you track: days from the question to the
+furthest point reached. Samples: `illustrations/bridge-in-progress.svg` and
+`illustrations/bridge-complete.svg`.
+
+`art.js` generates all four drawings as plain SVG, with seeded randomness so a pact's
 sketch stays the same between visits. The sketch technique is adapted from
 [claudedraw](https://github.com/Griffin2/claudedraw) by Griffin2 (MIT): an
 Ornstein-Uhlenbeck wobble on outlines, 45° looping scribble fills that bleed past
@@ -79,6 +99,7 @@ plays just for decoration, and nothing makes you wait.
 | Flask meter | the Today header flask fills to today's logged share (0.9s, expo out) | the one authored moment; it ties the app icon to your day |
 | Log check / cross | the button fills from the bottom like liquid, then the tick or cross draws on | confirms the tap in place |
 | Capability level up | the crest arcs draw on | shows the new level |
+| Bridge | the built part of the deck reveals from the question bank to today (1.1s) | traces the path you have covered |
 | Streak grows | the newest cell of the streak icon scales in | shows that the log extended the streak |
 | PACT check met | the circle settles and the tick draws, only when a criterion flips to met | feedback without replaying on every keystroke |
 | Grid day tap | the cell settles from 82% scale | confirms the change on a small target |

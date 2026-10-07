@@ -314,6 +314,13 @@ final class Capability {
     var target: String = ""
     var levelRaw: String = CapabilityLevel.exploring.rawValue
     var createdAt: Date = Date()
+    /// The question that started it, and when I first asked it. Day 0 of the bridge.
+    var question: String = ""
+    var askedAt: Date?
+    /// When each level was first reached (Exploring starts at `askedAt`).
+    var practicingAt: Date?
+    var proficientAt: Date?
+    var teachingAt: Date?
 
     @Relationship(deleteRule: .nullify, inverse: \Pact.capability)
     var pacts: [Pact]? = []
@@ -336,4 +343,60 @@ final class Capability {
     var allOutputs: [LabOutput] { allPacts.flatMap(\.sortedOutputs).sorted { $0.date > $1.date } }
     var repsLogged: Int { allPacts.map(\.doneCount).reduce(0, +) }
     var operationalizedOutputs: Int { allOutputs.filter(\.isOperationalized).count }
+}
+
+// MARK: - Question to capability
+
+struct Milestone: Identifiable {
+    let id: String
+    let label: String
+    let date: Date?
+}
+
+extension Capability {
+    /// Day 0: when the question was first asked (falls back to the first pact, then creation).
+    var questionDate: Date { askedAt ?? allPacts.map(\.startDate).min() ?? createdAt }
+
+    func day(of date: Date) -> Int { max(0, Date.daysBetween(questionDate, date)) }
+
+    func levelDate(_ level: CapabilityLevel) -> Date? {
+        switch level {
+        case .exploring: return questionDate
+        case .practicing: return practicingAt
+        case .proficient: return proficientAt
+        case .teaching: return teachingAt
+        }
+    }
+
+    /// Record the first time each level up to the current one was reached.
+    func stampLevelDates(on date: Date = .now) {
+        if level.index >= CapabilityLevel.practicing.index, practicingAt == nil { practicingAt = date }
+        if level.index >= CapabilityLevel.proficient.index, proficientAt == nil { proficientAt = date }
+        if level.index >= CapabilityLevel.teaching.index, teachingAt == nil { teachingAt = date }
+    }
+
+    var milestones: [Milestone] {
+        let firstExperiment = allPacts.map(\.startDate).filter { $0 <= .now }.min()
+        let firstProof = allPacts.compactMap(\.operationalizedAt).min()
+        var list = [
+            Milestone(id: "asked", label: "Question asked", date: questionDate),
+            Milestone(id: "first", label: "First experiment", date: firstExperiment),
+            Milestone(id: "proof", label: "First practice (proven)", date: firstProof),
+        ]
+        for l in CapabilityLevel.allCases.dropFirst() {
+            list.append(Milestone(id: l.rawValue, label: "Reached \(l.label)", date: l.index <= level.index ? levelDate(l) : nil))
+        }
+        return list
+    }
+
+    /// Headline for the bridge: days from the question to the furthest point reached.
+    var bridgeHeadline: (days: Int, caption: String) {
+        if let top = CapabilityLevel.allCases.dropFirst().filter({ $0.index <= level.index }).last, let date = levelDate(top) {
+            return (day(of: date), "from question to \(top.label)")
+        }
+        if let proof = allPacts.compactMap(\.operationalizedAt).min() {
+            return (day(of: proof), "from question to first proof")
+        }
+        return (day(of: .now), "in, still exploring")
+    }
 }

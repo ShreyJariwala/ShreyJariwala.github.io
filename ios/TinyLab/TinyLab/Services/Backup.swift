@@ -18,6 +18,12 @@ struct Backup: Codable {
         var target: String
         var level: String
         var createdAt: Date
+        // Optional so older backups still import.
+        var question: String?
+        var askedAt: Date?
+        var practicingAt: Date?
+        var proficientAt: Date?
+        var teachingAt: Date?
     }
 
     struct CheckInDTO: Codable {
@@ -83,7 +89,8 @@ enum BackupService {
         var backup = Backup()
         backup.capabilities = capabilities.map {
             Backup.CapabilityDTO(id: $0.id, name: $0.name, why: $0.why, target: $0.target,
-                  level: $0.levelRaw, createdAt: $0.createdAt)
+                  level: $0.levelRaw, createdAt: $0.createdAt, question: $0.question, askedAt: $0.askedAt,
+                  practicingAt: $0.practicingAt, proficientAt: $0.proficientAt, teachingAt: $0.teachingAt)
         }
         backup.pacts = pacts.map { p in
             Backup.PactDTO(id: p.id, action: p.action, question: p.question, durationDays: p.durationDays,
@@ -123,6 +130,11 @@ enum BackupService {
             c.target = dto.target
             c.levelRaw = dto.level
             c.createdAt = dto.createdAt
+            c.question = dto.question ?? ""
+            c.askedAt = dto.askedAt
+            c.practicingAt = dto.practicingAt
+            c.proficientAt = dto.proficientAt
+            c.teachingAt = dto.teachingAt
             context.insert(c)
             capabilitiesByID[dto.id] = c
             newCapabilities += 1
